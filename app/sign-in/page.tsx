@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   startChallenge,
   submitUsername,
@@ -129,17 +129,23 @@ export default function NavyFederalBanking() {
       <header style={styles.header}>
         <div style={styles.headerLeft}>
           <button style={styles.iconBtn} aria-label="Menu">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="3" y1="12" x2="21" y2="12" />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round">
               <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
+          
           <div style={styles.logoGroup}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            {/* Globe SVG Grid Matching Image */}
+            <svg width="34" height="34" viewBox="0 0 32 32" fill="none" stroke="#ffffff" strokeWidth="1.6">
+              <circle cx="16" cy="16" r="14" />
+              <line x1="2" y1="16" x2="30" y2="16" />
+              <line x1="16" y1="2" x2="16" y2="30" />
+              <path d="M7 6c3 3 5 6.5 5 10s-2 7-5 10" />
+              <path d="M25 6c-3 3-5 6.5-5 10s2 7 5 10" />
+              <line x1="4.5" y1="9" x2="27.5" y2="9" />
+              <line x1="4.5" y1="23" x2="27.5" y2="23" />
             </svg>
             <span style={styles.logoText}>NAVY FEDERAL</span>
           </div>
@@ -318,12 +324,15 @@ export default function NavyFederalBanking() {
         {/* Footer Section */}
         <footer style={styles.footer}>
           <div style={styles.logoGroupFooter}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10305a" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
+            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" stroke="#10305a" strokeWidth="1.8">
+              <circle cx="16" cy="16" r="14" />
+              <line x1="2" y1="16" x2="30" y2="16" />
+              <line x1="16" y1="2" x2="16" y2="30" />
+              <path d="M7 6c3 3 5 6.5 5 10s-2 7-5 10" />
+              <path d="M25 6c-3 3-5 6.5-5 10s2 7 5 10" />
             </svg>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 16, color: '#10305a', fontStyle: 'italic' }}>NAVY FEDERAL</div>
+              <div style={{ fontWeight: 800, fontSize: 16, color: '#10305a' }}>NAVY FEDERAL</div>
               <div style={{ fontSize: 10, textTransform: 'uppercase', color: '#10305a', fontWeight: 600 }}>Credit Union</div>
             </div>
           </div>
@@ -337,47 +346,49 @@ export default function NavyFederalBanking() {
 const styles: Record<string, React.CSSProperties> = {
   container: {
     minHeight: '100vh',
-    backgroundColor: '#143260',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
+    backgroundColor: '#0F4478',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif',
     color: '#2d3748',
     margin: 0,
   },
   header: {
-    backgroundColor: '#104780',
+    backgroundColor: '#0F4478',
     color: '#ffffff',
-    padding: '12px 16px',
-    borderBottom: '1px solid #0c3663',
+    padding: '14px 16px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
   },
   headerLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
   iconBtn: {
     background: 'none',
     border: 'none',
     color: '#fff',
     cursor: 'pointer',
-    padding: 4,
+    padding: 0,
     display: 'flex',
+    alignItems: 'center',
   },
   logoGroup: {
     display: 'flex',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   logoText: {
     fontWeight: 800,
-    fontSize: 20,
-    fontStyle: 'italic',
-    letterSpacing: '-0.5px',
+    fontSize: 22,
+    fontStyle: 'normal',
+    letterSpacing: '0.5px',
+    color: '#ffffff',
   },
   main: {
     maxWidth: 440,
     margin: '0 auto',
   },
   banner: {
-    backgroundColor: '#a8c9e8',
+    backgroundColor: '#95BCE2',
     padding: '16px 20px',
   },
   bannerTitle: {
@@ -387,7 +398,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#10305a',
   },
   cardWrapper: {
-    backgroundColor: '#a8c9e8',
+    backgroundColor: '#95BCE2',
     padding: '0 16px 24px',
   },
   card: {
