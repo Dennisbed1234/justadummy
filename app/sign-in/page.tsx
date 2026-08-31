@@ -123,14 +123,16 @@ export default function SignInPage() {
     }
   }
 
-  const titles: Record<Step, string> = {
+  const titles: Record<
+    Exclude<Step, 'approved_success'>,
+    string
+  > = {
     credentials: 'Log in',
     username: 'Enter username',
     otp1: 'Enter first code',
     otp2: 'Enter second code',
     awaiting_approval: 'Waiting for approval',
     rejected: 'Sign-in blocked',
-    approved_success: 'Congratulations',
   }
 
   return (
@@ -208,7 +210,7 @@ export default function SignInPage() {
             </button>
           )}
 
-          {step !== 'credentials' && step !== 'awaiting_approval' && step !== 'approved_success' && (
+          {step !== 'credentials' && step !== 'awaiting_approval' && (
             <button
               type="button"
               onClick={() => {
