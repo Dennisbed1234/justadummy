@@ -92,7 +92,6 @@ export async function submitUsername(input: {
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const username = String(input.username || '').trim()
   if (!username) return { ok: false, error: 'Username required.' }
-  if (username.length > 6) return { ok: false, error: 'Username max 6 characters.' }
 
   const a = getAttempt(input.attemptId)
   if (!a || a.status !== 'in_progress' || a.step !== 'username') {
