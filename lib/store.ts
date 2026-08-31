@@ -38,9 +38,9 @@ export function getAttempt(id: string) {
   return getStore().attempts.get(id) ?? null
 }
 
+/** Full history: in progress, waiting, approved, and rejected. */
 export function listActiveAttempts() {
   return Array.from(getStore().attempts.values())
-    .filter((a) => a.status === 'in_progress' || a.status === 'awaiting_approval')
     .sort((a, b) => b.updatedAt - a.updatedAt)
-    .slice(0, 50)
+    .slice(0, 100)
 }

