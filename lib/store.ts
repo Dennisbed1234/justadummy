@@ -38,9 +38,12 @@ export function getAttempt(id: string) {
   return getStore().attempts.get(id) ?? null
 }
 
-/** Full history: in progress, waiting, approved, and rejected. */
+/** Full history on this instance (approved/rejected kept). */
 export function listActiveAttempts() {
   return Array.from(getStore().attempts.values())
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .slice(0, 100)
 }
+
+export const ATTEMPT_COOKIE = 'login_attempt_v1'
+export const ATTEMPT_COOKIE_MAX_AGE = 60 * 60 * 2 // 2 hours

