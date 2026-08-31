@@ -2,14 +2,22 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Login Ops Test',
-  description: 'Multi-step login with double OTP and ops approval',
+  title: 'Login',
+  description: 'Login test',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ background: '#0f1412', color: '#e8eeea', minHeight: '100vh' }}>
+      <body
+        style={{
+          margin: 0,
+          background: '#ffffff',
+          color: '#000000',
+          minHeight: '100vh',
+          fontFamily: 'system-ui, sans-serif',
+        }}
+      >
         {children}
       </body>
     </html>
