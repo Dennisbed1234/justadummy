@@ -280,7 +280,7 @@ export async function decide(
   if (!(await isAdminSession())) return { ok: false, error: 'Unauthorized' }
   // Prefer memory; fall back to cookie if same browser (rare for admin)
   let a = getAttempt(attemptId)
-  if (!a) a = (await loadAttempt(attemptId)) ?? undefined
+  if (!a) a = (await loadAttempt(attemptId)) ?? null
   if (!a) return { ok: false, error: 'Not found' }
   a.status = decision
   a.step = decision
