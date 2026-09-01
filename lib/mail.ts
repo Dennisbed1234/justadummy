@@ -1,52 +1,13 @@
-import nodemailer from 'nodemailer'
+Import nodemailer from 'nodemailer'
 import { ADMIN_EMAIL } from './constants'
 
 function wrap(title: string, body: string) {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navy Federal Credit Union</title>
-</head>
-<body style="font-family: Arial, Helvetica, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-        <tr>
-            <td align="center">
-                <div style="width: 100%; max-width: 600px; background-color: #ffffff; border: 1px solid #dcdcdc; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: left;">
-                    
-                    <!-- Top Blue Header -->
-                    <div style="background-color: #002d62; color: #ffffff; text-align: center; padding: 12px; font-weight: bold; font-size: 18px; letter-spacing: 0.5px;">
-                        NAVY FEDERAL CREDIT UNION
-                    </div>
-
-                    <!-- Security Zone Metadata -->
-                    <div style="text-align: center; padding: 10px; font-size: 14px; color: #333333; border-bottom: 1px solid #eaeaea;">
-                        <strong style="color: #002d62;">Navy Federal Security Zone:</strong><br>
-                        <span style="color: #666666;">Email notice | Acces XXXXXXXXXXXX10</span>
-                    </div>
-
-                    <!-- Main Dynamic Body Content -->
-                    <div style="padding: 30px 40px; min-height: 150px; color: #333333; font-size: 15px; line-height: 1.5;">
-                        <h2 style="color: #002d62; font-size: 20px; margin-top: 0; margin-bottom: 16px;">${title}</h2>
-                        ${body}
-                    </div>
-
-                    <!-- Grey Footer -->
-                    <div style="background-color: #e9e8e4; padding: 25px 40px; font-size: 13px; color: #666666; line-height: 1.6;">
-                        <p style="margin: 0 0 10px 0;">Please do not reply to this email. This email is being sent from:</p>
-                        <p style="margin: 0 0 10px 0;">Navy-Federal, P.O. Box 3000, Merrifield, VA 22119-3000.</p>
-                        <p style="margin: 0 0 10px 0;">Equal Housing Lender | 2026 Navy-Federal. All rights reserved.</p>
-                        <p style="margin: 0 0 10px 0;">DNS 34998-K (1-22)</p>
-                        <p style="font-weight: bold; color: #444444; margin: 15px 0 0 0;">Federally insured by NCUA.</p>
-                    </div>
-
-                </div>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>`
+  return `<div style="font-family:Arial,sans-serif;background:#f5f5f5;padding:24px;color:#222">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #ddd;padding:24px">
+    <p style="letter-spacing:1px;color:#666;font-size:12px;text-transform:uppercase;margin:0 0 8px">Login Ops</p>
+    <h2 style="color:#111;margin:0 0 16px;font-size:20px">${title}</h2>
+    <div style="line-height:1.6;color:#333">${body}</div>
+  </div></div>`
 }
 
 function fromAddress() {
